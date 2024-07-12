@@ -40,5 +40,5 @@ jobs:
       - name: Check client
         run: yarn sync
       - run: |
-          git config --global --add safe.directory /__w/pdf-gen/pdf-gen
+          git config --global --add safe.directory /__w/pdf-generator/pdf-generator
           git diff --relative=dist/ --exit-code
