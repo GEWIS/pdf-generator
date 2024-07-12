@@ -17,6 +17,8 @@ RUN yarn global add pm2
 
 ENV NODE_ENV production
 
+RUN mkdir /usr/src/app/tmp
+
 RUN yarn run generate:middleware && yarn run build
 EXPOSE 3001
 

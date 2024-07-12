@@ -55,7 +55,6 @@ export function prepareFileResponse(
 
   let fileResponse: ReadStream = fileSystem.createReadStream(filePath);
   fileResponse.on('close', async () => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
     await deleteFile(filePath);
   });
 
@@ -83,9 +82,10 @@ export async function convertTexToPdf(
   filePath: string,
   templateDir: string
 ): Promise<void> {
-  return new Promise((resolve, reject): void => {
+  return new Promise(async (resolve, reject): Promise<void> => {
     const output: fileSystem.WriteStream = fileSystem.createWriteStream(filePath);
-    const pdf: internal.Transform = latex(file, { inputs: templateDir, passes: 3 });
+    const pdf: internal.Transform = latex(file, {inputs: templateDir, passes: 3});
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     pdf.pipe(output);
     pdf.on('error', (err: Error) => reject(err));
