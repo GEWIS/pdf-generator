@@ -84,8 +84,8 @@ export async function convertTexToPdf(
 ): Promise<void> {
   return new Promise(async (resolve, reject): Promise<void> => {
     const output: fileSystem.WriteStream = fileSystem.createWriteStream(filePath);
-    const pdf: internal.Transform = latex(file, {inputs: templateDir, passes: 3});
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const pdf: internal.Transform = latex(file, { inputs: templateDir, passes: 3 });
+    await new Promise(r => setTimeout(r, 500));
 
     pdf.pipe(output);
     pdf.on('error', (err: Error) => reject(err));
