@@ -1,0 +1,47 @@
+{
+  "name": "pdf-generator-client",
+  "version": "0.0.1",
+  "description": "This repository contains the client for the PDF-generator.",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "build": "vite build",
+    "generate": "nswag openapi2tsclient /input:swagger.json /output:pdf-generator-client.ts /ServiceHost:.",
+    "spec": "tsoa spec -c ./tsoa.json",
+    "sync": "yarn run spec && yarn run generate && yarn run build",
+    "precommit": "sync && git add dist swagger.json"
+  },
+  "main": "./dist/pdf-generator.umd.cjs",
+  "module": "./dist/pdf-generator.js",
+  "type": "module",
+  "types": "./dist/pdf-generator.d.ts",
+  "typings": "./dist/pdf-generator.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/pdf-generator.js",
+      "require": "./dist/pdf-generator.umd.cjs",
+      "types": "./dist/pdf-generator.d.ts"
+    }
+  },
+  "files": [
+    "dist/"
+  ],
+  "author": "Gijs de Man",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GEWIS/pdf-generator.git"
+  },
+  "private": false,
+  "bugs": {
+    "url": "https://github.com/GEWIS/pdf-generator/issues"
+  },
+  "homepage": "https://github.com/GEWIS/pdf-generator#readme",
+  "devDependencies": {
+    "@types/node": "^20.9.0",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0",
+    "vite-plugin-dts": "^3.6.3",
+    "tsoa": "^6.0.1",
+    "nswag": "^14.0.2",
+    "release-it": "^17.2.1"
+  }
+}

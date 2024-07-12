@@ -1,0 +1,17 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/**/*Controller.ts"],
+  "schemes": [
+    "http"
+  ],
+  "spec": {
+    "basePath": "/pdf",
+    "outputDirectory": "src/public",
+    "specVersion": 3
+  },
+  "routes": {
+    "basePath": "/pdf",
+    "routesDir": "src"
+  }
+}

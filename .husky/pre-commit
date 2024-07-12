@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+exec >/dev/tty 2>&1
+npx lint-staged
+# Ensure dist is up to date
+yarn run spec && yarn run generate && yarn run build && git add dist
