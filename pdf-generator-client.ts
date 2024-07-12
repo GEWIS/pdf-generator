@@ -21,6 +21,65 @@ export class Client {
     /**
      * @return Ok
      */
+    generateInvoice(body: FineRouteParams): Promise<FileResponse> {
+        let url_ = this.baseUrl + "/report/fines";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/pdf+tex"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGenerateInvoice(_response);
+        });
+    }
+
+    protected processGenerateInvoice(response: Response): Promise<FileResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status === 422) {
+            return response.text().then((_responseText) => {
+            let result422: any = null;
+            let resultData422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result422 = ValidateErrorJSON.fromJS(resultData422);
+            return throwException("Validation Failed", status, _responseText, _headers, result422);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = InternalError.fromJS(resultData500);
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse>(null as any);
+    }
+
+    /**
+     * @return Ok
+     */
     generatePayout(body: PayoutRouteParams): Promise<FileResponse> {
         let url_ = this.baseUrl + "/payout";
         url_ = url_.replace(/[?&]$/, "");
@@ -142,7 +201,7 @@ export class Client {
     /**
      * @return Ok
      */
-    generateInvoice(type: InvoiceType, body: InvoiceRouteParams): Promise<FileResponse> {
+    generateInvoice2(type: InvoiceType, body: InvoiceRouteParams): Promise<FileResponse> {
         let url_ = this.baseUrl + "/invoice/{type}";
         if (type === undefined || type === null)
             throw new Error("The parameter 'type' must be defined.");
@@ -161,11 +220,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGenerateInvoice(_response);
+            return this.processGenerateInvoice2(_response);
         });
     }
 
-    protected processGenerateInvoice(response: Response): Promise<FileResponse> {
+    protected processGenerateInvoice2(response: Response): Promise<FileResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200 || status === 206) {
@@ -291,264 +350,6 @@ export class InternalError implements IInternalError {
 
 export interface IInternalError {
     message: InternalErrorMessage;
-}
-
-export class Payout implements IPayout {
-    bankAccountName!: string;
-    bankAccountNumber!: string;
-    amount!: number;
-    reference!: string;
-    date!: Date;
-    debtorNumber!: string;
-
-    constructor(data?: IPayout) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.bankAccountName = _data["bankAccountName"];
-            this.bankAccountNumber = _data["bankAccountNumber"];
-            this.amount = _data["amount"];
-            this.reference = _data["reference"];
-            this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>undefined;
-            this.debtorNumber = _data["debtorNumber"];
-        }
-    }
-
-    static fromJS(data: any): Payout {
-        data = typeof data === 'object' ? data : {};
-        let result = new Payout();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["bankAccountName"] = this.bankAccountName;
-        data["bankAccountNumber"] = this.bankAccountNumber;
-        data["amount"] = this.amount;
-        data["reference"] = this.reference;
-        data["date"] = this.date ? this.date.toISOString() : <any>undefined;
-        data["debtorNumber"] = this.debtorNumber;
-        return data;
-    }
-}
-
-export interface IPayout {
-    bankAccountName: string;
-    bankAccountNumber: string;
-    amount: number;
-    reference: string;
-    date: Date;
-    debtorNumber: string;
-}
-
-export class PayoutParameters implements IPayoutParameters {
-    payout!: Payout;
-
-    constructor(data?: IPayoutParameters) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        if (!data) {
-            this.payout = new Payout();
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.payout = _data["payout"] ? Payout.fromJS(_data["payout"]) : new Payout();
-        }
-    }
-
-    static fromJS(data: any): PayoutParameters {
-        data = typeof data === 'object' ? data : {};
-        let result = new PayoutParameters();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["payout"] = this.payout ? this.payout.toJSON() : <any>undefined;
-        return data;
-    }
-}
-
-export interface IPayoutParameters {
-    payout: Payout;
-}
-
-export enum Language {
-    DUTCH = "DUTCH",
-    ENGLISH = "ENGLISH",
-}
-
-export enum ReturnFileType {
-    PDF = "PDF",
-    TEX = "TEX",
-}
-
-export class FileSettings implements IFileSettings {
-    name!: string;
-    language!: Language;
-    fileType!: ReturnFileType;
-    stationery?: string;
-    createdAt!: Date;
-
-    constructor(data?: IFileSettings) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.name = _data["name"];
-            this.language = _data["language"];
-            this.fileType = _data["fileType"];
-            this.stationery = _data["stationery"];
-            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): FileSettings {
-        data = typeof data === 'object' ? data : {};
-        let result = new FileSettings();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["name"] = this.name;
-        data["language"] = this.language;
-        data["fileType"] = this.fileType;
-        data["stationery"] = this.stationery;
-        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
-        return data;
-    }
-}
-
-export interface IFileSettings {
-    name: string;
-    language: Language;
-    fileType: ReturnFileType;
-    stationery?: string;
-    createdAt: Date;
-}
-
-export class PayoutRouteParams implements IPayoutRouteParams {
-    params!: PayoutParameters;
-    settings!: FileSettings;
-
-    constructor(data?: IPayoutRouteParams) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        if (!data) {
-            this.params = new PayoutParameters();
-            this.settings = new FileSettings();
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.params = _data["params"] ? PayoutParameters.fromJS(_data["params"]) : new PayoutParameters();
-            this.settings = _data["settings"] ? FileSettings.fromJS(_data["settings"]) : new FileSettings();
-        }
-    }
-
-    static fromJS(data: any): PayoutRouteParams {
-        data = typeof data === 'object' ? data : {};
-        let result = new PayoutRouteParams();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["params"] = this.params ? this.params.toJSON() : <any>undefined;
-        data["settings"] = this.settings ? this.settings.toJSON() : <any>undefined;
-        return data;
-    }
-}
-
-export interface IPayoutRouteParams {
-    params: PayoutParameters;
-    settings: FileSettings;
-}
-
-export enum ContractType {
-    Contract = "contract",
-    Quote = "quote",
-}
-
-export class Identity implements IIdentity {
-    firstName!: string;
-    lastNamePreposition!: string;
-    lastName!: string;
-    fullName!: string;
-    function?: string;
-
-    constructor(data?: IIdentity) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.firstName = _data["firstName"];
-            this.lastNamePreposition = _data["lastNamePreposition"];
-            this.lastName = _data["lastName"];
-            this.fullName = _data["fullName"];
-            this.function = _data["function"];
-        }
-    }
-
-    static fromJS(data: any): Identity {
-        data = typeof data === 'object' ? data : {};
-        let result = new Identity();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["firstName"] = this.firstName;
-        data["lastNamePreposition"] = this.lastNamePreposition;
-        data["lastName"] = this.lastName;
-        data["fullName"] = this.fullName;
-        data["function"] = this.function;
-        return data;
-    }
-}
-
-export interface IIdentity {
-    firstName: string;
-    lastNamePreposition: string;
-    lastName: string;
-    fullName: string;
-    function?: string;
 }
 
 export enum VAT {
@@ -710,6 +511,368 @@ export interface ITotalPricing {
     lowVat: number;
     highVat: number;
     inclVat: number;
+}
+
+export class FineReportParameters implements IFineReportParameters {
+    startDate!: Date;
+    endDate!: Date;
+    fines!: Product[];
+    total!: TotalPricing;
+
+    constructor(data?: IFineReportParameters) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.fines = [];
+            this.total = new TotalPricing();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.startDate = _data["startDate"] ? new Date(_data["startDate"].toString()) : <any>undefined;
+            this.endDate = _data["endDate"] ? new Date(_data["endDate"].toString()) : <any>undefined;
+            if (Array.isArray(_data["fines"])) {
+                this.fines = [] as any;
+                for (let item of _data["fines"])
+                    this.fines!.push(Product.fromJS(item));
+            }
+            this.total = _data["total"] ? TotalPricing.fromJS(_data["total"]) : new TotalPricing();
+        }
+    }
+
+    static fromJS(data: any): FineReportParameters {
+        data = typeof data === 'object' ? data : {};
+        let result = new FineReportParameters();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["startDate"] = this.startDate ? this.startDate.toISOString() : <any>undefined;
+        data["endDate"] = this.endDate ? this.endDate.toISOString() : <any>undefined;
+        if (Array.isArray(this.fines)) {
+            data["fines"] = [];
+            for (let item of this.fines)
+                data["fines"].push(item.toJSON());
+        }
+        data["total"] = this.total ? this.total.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IFineReportParameters {
+    startDate: Date;
+    endDate: Date;
+    fines: Product[];
+    total: TotalPricing;
+}
+
+export enum Language {
+    DUTCH = "DUTCH",
+    ENGLISH = "ENGLISH",
+}
+
+export enum ReturnFileType {
+    PDF = "PDF",
+    TEX = "TEX",
+}
+
+export class FileSettings implements IFileSettings {
+    name!: string;
+    language!: Language;
+    fileType!: ReturnFileType;
+    stationery?: string;
+    createdAt!: Date;
+
+    constructor(data?: IFileSettings) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.language = _data["language"];
+            this.fileType = _data["fileType"];
+            this.stationery = _data["stationery"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): FileSettings {
+        data = typeof data === 'object' ? data : {};
+        let result = new FileSettings();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["language"] = this.language;
+        data["fileType"] = this.fileType;
+        data["stationery"] = this.stationery;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IFileSettings {
+    name: string;
+    language: Language;
+    fileType: ReturnFileType;
+    stationery?: string;
+    createdAt: Date;
+}
+
+export class FineRouteParams implements IFineRouteParams {
+    params!: FineReportParameters;
+    settings!: FileSettings;
+
+    constructor(data?: IFineRouteParams) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.params = new FineReportParameters();
+            this.settings = new FileSettings();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.params = _data["params"] ? FineReportParameters.fromJS(_data["params"]) : new FineReportParameters();
+            this.settings = _data["settings"] ? FileSettings.fromJS(_data["settings"]) : new FileSettings();
+        }
+    }
+
+    static fromJS(data: any): FineRouteParams {
+        data = typeof data === 'object' ? data : {};
+        let result = new FineRouteParams();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["params"] = this.params ? this.params.toJSON() : <any>undefined;
+        data["settings"] = this.settings ? this.settings.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IFineRouteParams {
+    params: FineReportParameters;
+    settings: FileSettings;
+}
+
+export class Payout implements IPayout {
+    bankAccountName!: string;
+    bankAccountNumber!: string;
+    amount!: number;
+    reference!: string;
+    date!: Date;
+    debtorNumber!: string;
+
+    constructor(data?: IPayout) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.bankAccountName = _data["bankAccountName"];
+            this.bankAccountNumber = _data["bankAccountNumber"];
+            this.amount = _data["amount"];
+            this.reference = _data["reference"];
+            this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>undefined;
+            this.debtorNumber = _data["debtorNumber"];
+        }
+    }
+
+    static fromJS(data: any): Payout {
+        data = typeof data === 'object' ? data : {};
+        let result = new Payout();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["bankAccountName"] = this.bankAccountName;
+        data["bankAccountNumber"] = this.bankAccountNumber;
+        data["amount"] = this.amount;
+        data["reference"] = this.reference;
+        data["date"] = this.date ? this.date.toISOString() : <any>undefined;
+        data["debtorNumber"] = this.debtorNumber;
+        return data;
+    }
+}
+
+export interface IPayout {
+    bankAccountName: string;
+    bankAccountNumber: string;
+    amount: number;
+    reference: string;
+    date: Date;
+    debtorNumber: string;
+}
+
+export class PayoutParameters implements IPayoutParameters {
+    payout!: Payout;
+
+    constructor(data?: IPayoutParameters) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.payout = new Payout();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.payout = _data["payout"] ? Payout.fromJS(_data["payout"]) : new Payout();
+        }
+    }
+
+    static fromJS(data: any): PayoutParameters {
+        data = typeof data === 'object' ? data : {};
+        let result = new PayoutParameters();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["payout"] = this.payout ? this.payout.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IPayoutParameters {
+    payout: Payout;
+}
+
+export class PayoutRouteParams implements IPayoutRouteParams {
+    params!: PayoutParameters;
+    settings!: FileSettings;
+
+    constructor(data?: IPayoutRouteParams) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.params = new PayoutParameters();
+            this.settings = new FileSettings();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.params = _data["params"] ? PayoutParameters.fromJS(_data["params"]) : new PayoutParameters();
+            this.settings = _data["settings"] ? FileSettings.fromJS(_data["settings"]) : new FileSettings();
+        }
+    }
+
+    static fromJS(data: any): PayoutRouteParams {
+        data = typeof data === 'object' ? data : {};
+        let result = new PayoutRouteParams();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["params"] = this.params ? this.params.toJSON() : <any>undefined;
+        data["settings"] = this.settings ? this.settings.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IPayoutRouteParams {
+    params: PayoutParameters;
+    settings: FileSettings;
+}
+
+export enum ContractType {
+    Contract = "contract",
+    Quote = "quote",
+}
+
+export class Identity implements IIdentity {
+    firstName!: string;
+    lastNamePreposition!: string;
+    lastName!: string;
+    fullName!: string;
+    function?: string;
+
+    constructor(data?: IIdentity) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.firstName = _data["firstName"];
+            this.lastNamePreposition = _data["lastNamePreposition"];
+            this.lastName = _data["lastName"];
+            this.fullName = _data["fullName"];
+            this.function = _data["function"];
+        }
+    }
+
+    static fromJS(data: any): Identity {
+        data = typeof data === 'object' ? data : {};
+        let result = new Identity();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["firstName"] = this.firstName;
+        data["lastNamePreposition"] = this.lastNamePreposition;
+        data["lastName"] = this.lastName;
+        data["fullName"] = this.fullName;
+        data["function"] = this.function;
+        return data;
+    }
+}
+
+export interface IIdentity {
+    firstName: string;
+    lastNamePreposition: string;
+    lastName: string;
+    fullName: string;
+    function?: string;
 }
 
 export class Dates implements IDates {
