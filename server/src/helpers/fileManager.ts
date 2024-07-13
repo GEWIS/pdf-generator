@@ -85,7 +85,6 @@ export async function convertTexToPdf(
   return new Promise(async (resolve, reject): Promise<void> => {
     const output: fileSystem.WriteStream = fileSystem.createWriteStream(filePath);
     const pdf: internal.Transform = latex(file, { inputs: templateDir, passes: 3 });
-    await new Promise(r => setTimeout(r, 500));
 
     pdf.pipe(output);
     pdf.on('error', (err: Error) => reject(err));
@@ -119,6 +118,10 @@ export default async function finishFileGeneration(
         'Ran into an issue when converting to PDF. \n\n' + e
       );
     });
+    // Latex compiler has a tendency to not finish writing the file before the promise resolves
+    await new Promise(r => setTimeout(r, 500));
+    const stat: fileSystem.Stats = fileSystem.statSync(filePath);
+    console.debug(`File size: ${stat.size}`);
   }
   return filePath;
 }
