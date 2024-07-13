@@ -45,144 +45,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Payout": {
-				"properties": {
-					"bankAccountName": {
-						"type": "string"
-					},
-					"bankAccountNumber": {
-						"type": "string"
-					},
-					"amount": {
-						"type": "number",
-						"format": "double"
-					},
-					"reference": {
-						"type": "string"
-					},
-					"date": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"debtorNumber": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"bankAccountName",
-					"bankAccountNumber",
-					"amount",
-					"reference",
-					"date",
-					"debtorNumber"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"PayoutParameters": {
-				"properties": {
-					"payout": {
-						"$ref": "#/components/schemas/Payout"
-					}
-				},
-				"required": [
-					"payout"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Language": {
-				"enum": [
-					"DUTCH",
-					"ENGLISH"
-				],
-				"type": "string"
-			},
-			"ReturnFileType": {
-				"enum": [
-					"PDF",
-					"TEX"
-				],
-				"type": "string"
-			},
-			"FileSettings": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"language": {
-						"$ref": "#/components/schemas/Language"
-					},
-					"fileType": {
-						"$ref": "#/components/schemas/ReturnFileType"
-					},
-					"stationery": {
-						"type": "string"
-					},
-					"createdAt": {
-						"type": "string",
-						"format": "date-time"
-					}
-				},
-				"required": [
-					"name",
-					"language",
-					"fileType",
-					"createdAt"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"PayoutRouteParams": {
-				"properties": {
-					"params": {
-						"$ref": "#/components/schemas/PayoutParameters"
-					},
-					"settings": {
-						"$ref": "#/components/schemas/FileSettings"
-					}
-				},
-				"required": [
-					"params",
-					"settings"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ContractType": {
-				"enum": [
-					"contract",
-					"quote"
-				],
-				"type": "string"
-			},
-			"Identity": {
-				"properties": {
-					"firstName": {
-						"type": "string"
-					},
-					"lastNamePreposition": {
-						"type": "string"
-					},
-					"lastName": {
-						"type": "string"
-					},
-					"fullName": {
-						"type": "string"
-					},
-					"function": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"firstName",
-					"lastNamePreposition",
-					"lastName",
-					"fullName"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"VAT": {
 				"enum": [
 					"ZERO",
@@ -272,6 +134,189 @@
 					"lowVat",
 					"highVat",
 					"inclVat"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"FineReportParameters": {
+				"properties": {
+					"startDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"fines": {
+						"items": {
+							"$ref": "#/components/schemas/Product"
+						},
+						"type": "array"
+					},
+					"total": {
+						"$ref": "#/components/schemas/TotalPricing"
+					}
+				},
+				"required": [
+					"startDate",
+					"endDate",
+					"fines",
+					"total"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Language": {
+				"enum": [
+					"DUTCH",
+					"ENGLISH"
+				],
+				"type": "string"
+			},
+			"ReturnFileType": {
+				"enum": [
+					"PDF",
+					"TEX"
+				],
+				"type": "string"
+			},
+			"FileSettings": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"language": {
+						"$ref": "#/components/schemas/Language"
+					},
+					"fileType": {
+						"$ref": "#/components/schemas/ReturnFileType"
+					},
+					"stationery": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"name",
+					"language",
+					"fileType",
+					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"FineRouteParams": {
+				"properties": {
+					"params": {
+						"$ref": "#/components/schemas/FineReportParameters"
+					},
+					"settings": {
+						"$ref": "#/components/schemas/FileSettings"
+					}
+				},
+				"required": [
+					"params",
+					"settings"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Payout": {
+				"properties": {
+					"bankAccountName": {
+						"type": "string"
+					},
+					"bankAccountNumber": {
+						"type": "string"
+					},
+					"amount": {
+						"type": "number",
+						"format": "double"
+					},
+					"reference": {
+						"type": "string"
+					},
+					"date": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"debtorNumber": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"bankAccountName",
+					"bankAccountNumber",
+					"amount",
+					"reference",
+					"date",
+					"debtorNumber"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PayoutParameters": {
+				"properties": {
+					"payout": {
+						"$ref": "#/components/schemas/Payout"
+					}
+				},
+				"required": [
+					"payout"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PayoutRouteParams": {
+				"properties": {
+					"params": {
+						"$ref": "#/components/schemas/PayoutParameters"
+					},
+					"settings": {
+						"$ref": "#/components/schemas/FileSettings"
+					}
+				},
+				"required": [
+					"params",
+					"settings"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ContractType": {
+				"enum": [
+					"contract",
+					"quote"
+				],
+				"type": "string"
+			},
+			"Identity": {
+				"properties": {
+					"firstName": {
+						"type": "string"
+					},
+					"lastNamePreposition": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"fullName": {
+						"type": "string"
+					},
+					"function": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"firstName",
+					"lastNamePreposition",
+					"lastName",
+					"fullName"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -572,6 +617,57 @@
 		"contact": {}
 	},
 	"paths": {
+		"/report/fines": {
+			"post": {
+				"operationId": "GenerateFineReport",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/pdf+tex": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Failed",
+						"content": {
+							"application/pdf+tex": {
+								"schema": {
+									"$ref": "#/components/schemas/ValidateErrorJSON"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/pdf+tex": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalError"
+								}
+							}
+						}
+					}
+				},
+				"description": "Generates a report as Tex of PDF file.",
+				"tags": [
+					"Report"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/FineRouteParams"
+							}
+						}
+					}
+				}
+			}
+		},
 		"/payout": {
 			"post": {
 				"operationId": "GeneratePayout",

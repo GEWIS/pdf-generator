@@ -8,6 +8,11 @@ export declare class Client {
     /**
      * @return Ok
      */
+    generateFineReport(body: FineRouteParams): Promise<FileResponse>;
+    protected processGenerateFineReport(response: Response): Promise<FileResponse>;
+    /**
+     * @return Ok
+     */
     generatePayout(body: PayoutRouteParams): Promise<FileResponse>;
     protected processGeneratePayout(response: Response): Promise<FileResponse>;
     /**
@@ -46,96 +51,6 @@ export declare class InternalError implements IInternalError {
 }
 export interface IInternalError {
     message: InternalErrorMessage;
-}
-export declare class Payout implements IPayout {
-    bankAccountName: string;
-    bankAccountNumber: string;
-    amount: number;
-    reference: string;
-    date: Date;
-    debtorNumber: string;
-    constructor(data?: IPayout);
-    init(_data?: any): void;
-    static fromJS(data: any): Payout;
-    toJSON(data?: any): any;
-}
-export interface IPayout {
-    bankAccountName: string;
-    bankAccountNumber: string;
-    amount: number;
-    reference: string;
-    date: Date;
-    debtorNumber: string;
-}
-export declare class PayoutParameters implements IPayoutParameters {
-    payout: Payout;
-    constructor(data?: IPayoutParameters);
-    init(_data?: any): void;
-    static fromJS(data: any): PayoutParameters;
-    toJSON(data?: any): any;
-}
-export interface IPayoutParameters {
-    payout: Payout;
-}
-export declare enum Language {
-    DUTCH = "DUTCH",
-    ENGLISH = "ENGLISH"
-}
-export declare enum ReturnFileType {
-    PDF = "PDF",
-    TEX = "TEX"
-}
-export declare class FileSettings implements IFileSettings {
-    name: string;
-    language: Language;
-    fileType: ReturnFileType;
-    stationery?: string;
-    createdAt: Date;
-    constructor(data?: IFileSettings);
-    init(_data?: any): void;
-    static fromJS(data: any): FileSettings;
-    toJSON(data?: any): any;
-}
-export interface IFileSettings {
-    name: string;
-    language: Language;
-    fileType: ReturnFileType;
-    stationery?: string;
-    createdAt: Date;
-}
-export declare class PayoutRouteParams implements IPayoutRouteParams {
-    params: PayoutParameters;
-    settings: FileSettings;
-    constructor(data?: IPayoutRouteParams);
-    init(_data?: any): void;
-    static fromJS(data: any): PayoutRouteParams;
-    toJSON(data?: any): any;
-}
-export interface IPayoutRouteParams {
-    params: PayoutParameters;
-    settings: FileSettings;
-}
-export declare enum ContractType {
-    Contract = "contract",
-    Quote = "quote"
-}
-export declare class Identity implements IIdentity {
-    firstName: string;
-    lastNamePreposition: string;
-    lastName: string;
-    fullName: string;
-    function?: string;
-    constructor(data?: IIdentity);
-    init(_data?: any): void;
-    static fromJS(data: any): Identity;
-    toJSON(data?: any): any;
-}
-export interface IIdentity {
-    firstName: string;
-    lastNamePreposition: string;
-    lastName: string;
-    fullName: string;
-    function?: string;
 }
 export declare enum VAT {
     ZERO = "ZERO",
@@ -193,6 +108,124 @@ export interface ITotalPricing {
     lowVat: number;
     highVat: number;
     inclVat: number;
+}
+export declare class FineReportParameters implements IFineReportParameters {
+    startDate: Date;
+    endDate: Date;
+    fines: Product[];
+    total: TotalPricing;
+    constructor(data?: IFineReportParameters);
+    init(_data?: any): void;
+    static fromJS(data: any): FineReportParameters;
+    toJSON(data?: any): any;
+}
+export interface IFineReportParameters {
+    startDate: Date;
+    endDate: Date;
+    fines: Product[];
+    total: TotalPricing;
+}
+export declare enum Language {
+    DUTCH = "DUTCH",
+    ENGLISH = "ENGLISH"
+}
+export declare enum ReturnFileType {
+    PDF = "PDF",
+    TEX = "TEX"
+}
+export declare class FileSettings implements IFileSettings {
+    name: string;
+    language: Language;
+    fileType: ReturnFileType;
+    stationery?: string;
+    createdAt: Date;
+    constructor(data?: IFileSettings);
+    init(_data?: any): void;
+    static fromJS(data: any): FileSettings;
+    toJSON(data?: any): any;
+}
+export interface IFileSettings {
+    name: string;
+    language: Language;
+    fileType: ReturnFileType;
+    stationery?: string;
+    createdAt: Date;
+}
+export declare class FineRouteParams implements IFineRouteParams {
+    params: FineReportParameters;
+    settings: FileSettings;
+    constructor(data?: IFineRouteParams);
+    init(_data?: any): void;
+    static fromJS(data: any): FineRouteParams;
+    toJSON(data?: any): any;
+}
+export interface IFineRouteParams {
+    params: FineReportParameters;
+    settings: FileSettings;
+}
+export declare class Payout implements IPayout {
+    bankAccountName: string;
+    bankAccountNumber: string;
+    amount: number;
+    reference: string;
+    date: Date;
+    debtorNumber: string;
+    constructor(data?: IPayout);
+    init(_data?: any): void;
+    static fromJS(data: any): Payout;
+    toJSON(data?: any): any;
+}
+export interface IPayout {
+    bankAccountName: string;
+    bankAccountNumber: string;
+    amount: number;
+    reference: string;
+    date: Date;
+    debtorNumber: string;
+}
+export declare class PayoutParameters implements IPayoutParameters {
+    payout: Payout;
+    constructor(data?: IPayoutParameters);
+    init(_data?: any): void;
+    static fromJS(data: any): PayoutParameters;
+    toJSON(data?: any): any;
+}
+export interface IPayoutParameters {
+    payout: Payout;
+}
+export declare class PayoutRouteParams implements IPayoutRouteParams {
+    params: PayoutParameters;
+    settings: FileSettings;
+    constructor(data?: IPayoutRouteParams);
+    init(_data?: any): void;
+    static fromJS(data: any): PayoutRouteParams;
+    toJSON(data?: any): any;
+}
+export interface IPayoutRouteParams {
+    params: PayoutParameters;
+    settings: FileSettings;
+}
+export declare enum ContractType {
+    Contract = "contract",
+    Quote = "quote"
+}
+export declare class Identity implements IIdentity {
+    firstName: string;
+    lastNamePreposition: string;
+    lastName: string;
+    fullName: string;
+    function?: string;
+    constructor(data?: IIdentity);
+    init(_data?: any): void;
+    static fromJS(data: any): Identity;
+    toJSON(data?: any): any;
+}
+export interface IIdentity {
+    firstName: string;
+    lastNamePreposition: string;
+    lastName: string;
+    fullName: string;
+    function?: string;
 }
 export declare class Dates implements IDates {
     date: Date;
