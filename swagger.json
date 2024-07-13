@@ -622,7 +622,7 @@
 	"paths": {
 		"/report/fines": {
 			"post": {
-				"operationId": "GenerateInvoice",
+				"operationId": "GenerateFineReport",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -659,7 +659,7 @@
 						}
 					}
 				},
-				"description": "Generates an invoice as Tex of PDF file.\r\nSupply all invoice parameters and invoice type and receive the corresponding invoice",
+				"description": "Generates a report as Tex of PDF file.",
 				"tags": [
 					"Report"
 				],

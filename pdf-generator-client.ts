@@ -21,7 +21,7 @@ export class Client {
     /**
      * @return Ok
      */
-    generateInvoice(body: FineRouteParams): Promise<FileResponse> {
+    generateFineReport(body: FineRouteParams): Promise<FileResponse> {
         let url_ = this.baseUrl + "/report/fines";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -37,11 +37,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGenerateInvoice(_response);
+            return this.processGenerateFineReport(_response);
         });
     }
 
-    protected processGenerateInvoice(response: Response): Promise<FileResponse> {
+    protected processGenerateFineReport(response: Response): Promise<FileResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200 || status === 206) {
@@ -201,7 +201,7 @@ export class Client {
     /**
      * @return Ok
      */
-    generateInvoice2(type: InvoiceType, body: InvoiceRouteParams): Promise<FileResponse> {
+    generateInvoice(type: InvoiceType, body: InvoiceRouteParams): Promise<FileResponse> {
         let url_ = this.baseUrl + "/invoice/{type}";
         if (type === undefined || type === null)
             throw new Error("The parameter 'type' must be defined.");
@@ -220,11 +220,11 @@ export class Client {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGenerateInvoice2(_response);
+            return this.processGenerateInvoice(_response);
         });
     }
 
-    protected processGenerateInvoice2(response: Response): Promise<FileResponse> {
+    protected processGenerateInvoice(response: Response): Promise<FileResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200 || status === 206) {

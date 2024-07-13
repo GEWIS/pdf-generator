@@ -13,14 +13,13 @@ export interface FineRouteParams {
 @Tags('Report')
 export class ReportController extends Controller {
   /**
-   * Generates an invoice as Tex of PDF file.
-   * Supply all invoice parameters and invoice type and receive the corresponding invoice
-   */
+   * Generates a report as Tex of PDF file.
+  */
   @Post('fines')
   @Response<ValidateErrorJSON>(422, 'Validation Failed')
   @Response<InternalError>(500, 'Internal Server Error')
   @SuccessResponse(200, 'Ok')
-  public async generateInvoice(
+  public async generateFineReport(
     @Body() params: FineRouteParams
   ): Promise<any> {
     let fileName: string = await new ReportService().generateFineReport(
@@ -30,7 +29,7 @@ export class ReportController extends Controller {
     if (fileName === undefined)
       throw new ApiError(
         HTTPStatus.InternalServerError,
-        'Something went wrong when generating a payout. No file was generated.'
+        'Something went wrong when generating a report. No file was generated.'
       );
     return prepareFileResponse(this, fileName);
   }

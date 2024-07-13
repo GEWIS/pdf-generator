@@ -8,8 +8,8 @@ export declare class Client {
     /**
      * @return Ok
      */
-    generateInvoice(body: FineRouteParams): Promise<FileResponse>;
-    protected processGenerateInvoice(response: Response): Promise<FileResponse>;
+    generateFineReport(body: FineRouteParams): Promise<FileResponse>;
+    protected processGenerateFineReport(response: Response): Promise<FileResponse>;
     /**
      * @return Ok
      */
@@ -23,8 +23,8 @@ export declare class Client {
     /**
      * @return Ok
      */
-    generateInvoice2(type: InvoiceType, body: InvoiceRouteParams): Promise<FileResponse>;
-    protected processGenerateInvoice2(response: Response): Promise<FileResponse>;
+    generateInvoice(type: InvoiceType, body: InvoiceRouteParams): Promise<FileResponse>;
+    protected processGenerateInvoice(response: Response): Promise<FileResponse>;
 }
 export declare class ValidateErrorJSON implements IValidateErrorJSON {
     message: ValidateErrorJSONMessage;
