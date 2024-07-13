@@ -10,16 +10,16 @@
     "sync": "yarn run spec && yarn run generate && yarn run build",
     "precommit": "sync && git add dist swagger.json"
   },
-  "main": "./dist/pdf-generator.umd.cjs",
-  "module": "./dist/pdf-generator.js",
+  "main": "./dist/pdf-generator-client.umd.cjs",
+  "module": "./dist/pdf-generator-client.js",
   "type": "module",
-  "types": "./dist/pdf-generator.d.ts",
-  "typings": "./dist/pdf-generator.d.ts",
+  "types": "./dist/pdf-generator-client.d.ts",
+  "typings": "./dist/pdf-generator-client.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/pdf-generator.js",
-      "require": "./dist/pdf-generator.umd.cjs",
-      "types": "./dist/pdf-generator.d.ts"
+      "import": "./dist/pdf-generator-client.js",
+      "require": "./dist/pdf-generator-client.umd.cjs",
+      "types": "./dist/pdf-generator-client.d.ts"
     }
   },
   "files": [
