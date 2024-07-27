@@ -120,8 +120,6 @@ export default async function finishFileGeneration(
     });
     // Latex compiler has a tendency to not finish writing the file before the promise resolves
     await new Promise(r => setTimeout(r, 500));
-    const stat: fileSystem.Stats = fileSystem.statSync(filePath);
-    console.debug(`File size: ${stat.size}`);
   }
   return filePath;
 }

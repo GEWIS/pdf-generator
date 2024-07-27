@@ -13,12 +13,54 @@ import { ApiError } from './helpers/customError';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from './public/swagger.json';
 import path from 'path';
+import winston from 'winston';
+import expressWinston from 'express-winston';
 
 dotenv.config({ path: '.env' });
 
 const PORT: number = parseInt(process.env.PORT!) || 3001;
 
-export function setupErrorHandler(app: Express) {
+const app: Express = express();
+
+// Setup winston logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console(),
+  ]
+});
+
+// Middleware to log all requests
+app.use(expressWinston.logger({
+  winstonInstance: logger,
+  meta: true,
+  msg: "HTTP {{req.method}} {{req.url}}",
+  expressFormat: true,
+  colorize: false,
+  requestWhitelist: ['body', 'query', 'params', 'headers'],
+}));
+
+app.use(express.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
+
+app.use('/pdf/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.get('/pdf/swagger.json', (req, res) => {
+  res.sendFile(path.join(__dirname, './public/swagger.json'));
+});
+
+RegisterRoutes(app);
+setupErrorHandler(app);
+
+// Error logging
+app.use(expressWinston.errorLogger({
+  winstonInstance: logger
+}));
+
+function setupErrorHandler(app: Express) {
   app.use(function notFoundHandler(_req, res: ExResponse) {
     res.status(404).send({
       message: 'Not Found'
@@ -32,34 +74,23 @@ export function setupErrorHandler(app: Express) {
     next: NextFunction
   ): ExResponse | void {
     if (err instanceof ValidateError) {
-      console.warn(`Caught Validation Error for ${req.path}:`, err.fields);
+      logger.warn(`Caught Validation Error for ${req.path}:`, err.fields);
       return res.status(422).json({
         message: 'Validation Failed',
         details: err?.fields
       });
     }
     if (err instanceof ApiError) {
+      logger.error(`API Error on ${req.path}: ${err.message}`);
       return res.status(err.statusCode).json({
         message: err.name,
         details: err.message
       });
     }
 
+    logger.error(`Unexpected error on ${req.path}:`, err);
     next();
   });
 }
 
-const app: Express = express();
-
-app.use(express.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
-
-app.use('/pdf/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.get('/pdf/swagger.json', (req, res) => {
-  res.sendFile(path.join(__dirname, './public/swagger.json'));
-});
-
-RegisterRoutes(app);
-setupErrorHandler(app);
-
-app.listen(PORT, () => console.log(`Server is listening on port ${PORT}`));
+app.listen(PORT, () => logger.info(`Server is listening on port ${PORT}`));
