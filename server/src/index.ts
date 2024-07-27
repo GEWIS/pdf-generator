@@ -38,7 +38,7 @@ const logger = winston.createLogger({
 app.use(expressWinston.logger({
   winstonInstance: logger,
   meta: true,
-  msg: "HTTP {{req.method}} {{req.url}}",
+  msg: 'HTTP {{req.method}} {{req.url}}',
   expressFormat: true,
   colorize: false,
   requestWhitelist: ['body', 'query', 'params', 'headers'],
@@ -53,21 +53,20 @@ app.get('/pdf/swagger.json', (req, res) => {
 });
 
 RegisterRoutes(app);
-setupErrorHandler(app);
 
 // Error logging
 app.use(expressWinston.errorLogger({
   winstonInstance: logger
 }));
 
-function setupErrorHandler(app: Express) {
-  app.use(function notFoundHandler(_req, res: ExResponse) {
+function setupErrorHandler(a: Express) {
+  a.use(function notFoundHandler(_req, res: ExResponse) {
     res.status(404).send({
       message: 'Not Found'
     });
   });
 
-  app.use(function errorHandler(
+  a.use(function errorHandler(
     err: unknown,
     req: ExRequest,
     res: ExResponse,
@@ -92,5 +91,7 @@ function setupErrorHandler(app: Express) {
     next();
   });
 }
+
+setupErrorHandler(app);
 
 app.listen(PORT, () => logger.info(`Server is listening on port ${PORT}`));
