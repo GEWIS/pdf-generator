@@ -1350,6 +1350,7 @@ export class InvoiceParameters implements IInvoiceParameters {
     address!: Address;
     summarizedProducts?: Product[];
     reference?: InvoiceReferences;
+    description?: string;
 
     constructor(data?: IInvoiceParameters) {
         if (data) {
@@ -1389,6 +1390,7 @@ export class InvoiceParameters implements IInvoiceParameters {
                     this.summarizedProducts!.push(Product.fromJS(item));
             }
             this.reference = _data["reference"] ? InvoiceReferences.fromJS(_data["reference"]) : <any>undefined;
+            this.description = _data["description"];
         }
     }
 
@@ -1419,6 +1421,7 @@ export class InvoiceParameters implements IInvoiceParameters {
                 data["summarizedProducts"].push(item.toJSON());
         }
         data["reference"] = this.reference ? this.reference.toJSON() : <any>undefined;
+        data["description"] = this.description;
         return data;
     }
 }
@@ -1434,6 +1437,7 @@ export interface IInvoiceParameters {
     address: Address;
     summarizedProducts?: Product[];
     reference?: InvoiceReferences;
+    description?: string;
 }
 
 export class InvoiceRouteParams implements IInvoiceRouteParams {
