@@ -574,6 +574,9 @@
 					},
 					"reference": {
 						"$ref": "#/components/schemas/InvoiceReferences"
+					},
+					"description": {
+						"type": "string"
 					}
 				},
 				"required": [

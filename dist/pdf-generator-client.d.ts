@@ -385,6 +385,7 @@ export declare class InvoiceParameters implements IInvoiceParameters {
     address: Address;
     summarizedProducts?: Product[];
     reference?: InvoiceReferences;
+    description?: string;
     constructor(data?: IInvoiceParameters);
     init(_data?: any): void;
     static fromJS(data: any): InvoiceParameters;
@@ -401,6 +402,7 @@ export interface IInvoiceParameters {
     address: Address;
     summarizedProducts?: Product[];
     reference?: InvoiceReferences;
+    description?: string;
 }
 export declare class InvoiceRouteParams implements IInvoiceRouteParams {
     params: InvoiceParameters;
