@@ -2,7 +2,7 @@ import LetterService, { References } from './letterService';
 import { ApiError, HTTPStatus } from '../helpers/customError';
 import { InvoiceType } from '../controllers/invoiceController';
 import asyncFileSystem from 'fs/promises';
-import {replaceAll, replaceAllSafe} from '../helpers/replaceAll';
+import { replaceAll, replaceAllSafe } from '../helpers/replaceAll';
 import finishFileGeneration, { FileSettings, Stationery } from '../helpers/fileManager';
 import path from 'path';
 import createPricingTable, { Product } from '../helpers/componentGenerator';
