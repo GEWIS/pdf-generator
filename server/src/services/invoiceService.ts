@@ -16,6 +16,7 @@ export interface InvoiceReferences extends References {
 export interface InvoiceParameters extends Omit<QuoteParameters, 'reference'> {
   summarizedProducts?: Product[];
   reference?: InvoiceReferences;
+  description?: string;
 }
 
 export default class InvoiceService {
@@ -106,6 +107,8 @@ export default class InvoiceService {
         ? parameters.dates.endDate.toLocaleDateString('nl-NL')
         : parameters.dates.date.toLocaleDateString('nl-NL')
     );
+
+    invoice = replaceAll(invoice, '{{description}}', parameters.description ?? '');
 
     invoice = createPricingTable(invoice, parameters.products, parameters.pricing);
 
