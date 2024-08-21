@@ -13,6 +13,11 @@ export declare class Client {
     /**
      * @return Ok
      */
+    generateUserReport(body: UserRouteParams): Promise<FileResponse>;
+    protected processGenerateUserReport(response: Response): Promise<FileResponse>;
+    /**
+     * @return Ok
+     */
     generatePayout(body: PayoutRouteParams): Promise<FileResponse>;
     protected processGeneratePayout(response: Response): Promise<FileResponse>;
     /**
@@ -163,6 +168,58 @@ export interface IFineRouteParams {
     params: FineReportParameters;
     settings: FileSettings;
 }
+export declare class Identity implements IIdentity {
+    firstName: string;
+    lastNamePreposition: string;
+    lastName: string;
+    fullName: string;
+    function?: string;
+    constructor(data?: IIdentity);
+    init(_data?: any): void;
+    static fromJS(data: any): Identity;
+    toJSON(data?: any): any;
+}
+export interface IIdentity {
+    firstName: string;
+    lastNamePreposition: string;
+    lastName: string;
+    fullName: string;
+    function?: string;
+}
+export declare class UserReportParameters implements IUserReportParameters {
+    startDate: Date;
+    endDate: Date;
+    entries: Product[];
+    total: TotalPricing;
+    description?: string;
+    account: Identity;
+    type: UserReportParametersType;
+    constructor(data?: IUserReportParameters);
+    init(_data?: any): void;
+    static fromJS(data: any): UserReportParameters;
+    toJSON(data?: any): any;
+}
+export interface IUserReportParameters {
+    startDate: Date;
+    endDate: Date;
+    entries: Product[];
+    total: TotalPricing;
+    description?: string;
+    account: Identity;
+    type: UserReportParametersType;
+}
+export declare class UserRouteParams implements IUserRouteParams {
+    params: UserReportParameters;
+    settings: FileSettings;
+    constructor(data?: IUserRouteParams);
+    init(_data?: any): void;
+    static fromJS(data: any): UserRouteParams;
+    toJSON(data?: any): any;
+}
+export interface IUserRouteParams {
+    params: UserReportParameters;
+    settings: FileSettings;
+}
 export declare class Payout implements IPayout {
     bankAccountName: string;
     bankAccountNumber: string;
@@ -208,24 +265,6 @@ export interface IPayoutRouteParams {
 export declare enum ContractType {
     Contract = "contract",
     Quote = "quote"
-}
-export declare class Identity implements IIdentity {
-    firstName: string;
-    lastNamePreposition: string;
-    lastName: string;
-    fullName: string;
-    function?: string;
-    constructor(data?: IIdentity);
-    init(_data?: any): void;
-    static fromJS(data: any): Identity;
-    toJSON(data?: any): any;
-}
-export interface IIdentity {
-    firstName: string;
-    lastNamePreposition: string;
-    lastName: string;
-    fullName: string;
-    function?: string;
 }
 export declare class Dates implements IDates {
     date: Date;
@@ -421,6 +460,10 @@ export declare enum ValidateErrorJSONMessage {
 }
 export declare enum InternalErrorMessage {
     Internal_Server_Error = "Internal Server Error"
+}
+export declare enum UserReportParametersType {
+    Sales = "sales",
+    Purchases = "purchases"
 }
 export interface FileResponse {
     data: Blob;

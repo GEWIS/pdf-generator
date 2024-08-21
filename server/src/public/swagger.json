@@ -225,6 +225,93 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"Identity": {
+				"properties": {
+					"firstName": {
+						"type": "string"
+					},
+					"lastNamePreposition": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"fullName": {
+						"type": "string"
+					},
+					"function": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"firstName",
+					"lastNamePreposition",
+					"lastName",
+					"fullName"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserReportParameters": {
+				"properties": {
+					"startDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"entries": {
+						"items": {
+							"$ref": "#/components/schemas/Product"
+						},
+						"type": "array"
+					},
+					"total": {
+						"$ref": "#/components/schemas/TotalPricing"
+					},
+					"description": {
+						"type": "string"
+					},
+					"account": {
+						"$ref": "#/components/schemas/Identity"
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"sales",
+							"purchases"
+						]
+					}
+				},
+				"required": [
+					"startDate",
+					"endDate",
+					"entries",
+					"total",
+					"account",
+					"type"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserRouteParams": {
+				"properties": {
+					"params": {
+						"$ref": "#/components/schemas/UserReportParameters"
+					},
+					"settings": {
+						"$ref": "#/components/schemas/FileSettings"
+					}
+				},
+				"required": [
+					"params",
+					"settings"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Payout": {
 				"properties": {
 					"bankAccountName": {
@@ -293,33 +380,6 @@
 					"quote"
 				],
 				"type": "string"
-			},
-			"Identity": {
-				"properties": {
-					"firstName": {
-						"type": "string"
-					},
-					"lastNamePreposition": {
-						"type": "string"
-					},
-					"lastName": {
-						"type": "string"
-					},
-					"fullName": {
-						"type": "string"
-					},
-					"function": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"firstName",
-					"lastNamePreposition",
-					"lastName",
-					"fullName"
-				],
-				"type": "object",
-				"additionalProperties": false
 			},
 			"Dates": {
 				"properties": {
@@ -653,7 +713,7 @@
 						}
 					}
 				},
-				"description": "Generates a report as Tex of PDF file.",
+				"description": "Generates a fine report as Tex or PDF file.",
 				"tags": [
 					"Report"
 				],
@@ -665,6 +725,57 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/FineRouteParams"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/report/user": {
+			"post": {
+				"operationId": "GenerateUserReport",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/pdf+tex": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Failed",
+						"content": {
+							"application/pdf+tex": {
+								"schema": {
+									"$ref": "#/components/schemas/ValidateErrorJSON"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/pdf+tex": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalError"
+								}
+							}
+						}
+					}
+				},
+				"description": "Generates a sales report as Tex or PDF file.",
+				"tags": [
+					"Report"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserRouteParams"
 							}
 						}
 					}

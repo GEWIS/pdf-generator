@@ -58,7 +58,7 @@ export default function createPricingTable(
 
   for (let i: number = 0; i < products.length; i++) {
     product = products[i];
-    invoice += `\t${product.pricing.quantity} & ${product.name} ${product.details ? `(${product.details})` : ''} & ${convertNumberToCurrency(product.pricing.basePrice)} & ${product.pricing.vatAmount}\\% & ${convertNumberToCurrency(product.pricing.basePrice * product.pricing.quantity)}\\\\\n`;
+    invoice += `\t${product.pricing.quantity} & ${product.name.replace(/([&%$#_{}])/g, '\\$1')} ${product.details ? `(${product.details})` : ''} & ${convertNumberToCurrency(product.pricing.basePrice)} & ${product.pricing.vatAmount}\\% & ${convertNumberToCurrency(product.pricing.basePrice * product.pricing.quantity)}\\\\\n`;
     if (product.pricing.discount) {
       invoice += '\t  & - \\discount ';
       invoice += `& & ${product.pricing.vatAmount}\\% & ${convertNumberToCurrency(product.pricing.discount)}\\\\\n`;

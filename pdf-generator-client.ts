@@ -80,6 +80,65 @@ export class Client {
     /**
      * @return Ok
      */
+    generateUserReport(body: UserRouteParams): Promise<FileResponse> {
+        let url_ = this.baseUrl + "/report/user";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/pdf+tex"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGenerateUserReport(_response);
+        });
+    }
+
+    protected processGenerateUserReport(response: Response): Promise<FileResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status === 422) {
+            return response.text().then((_responseText) => {
+            let result422: any = null;
+            let resultData422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result422 = ValidateErrorJSON.fromJS(resultData422);
+            return throwException("Validation Failed", status, _responseText, _headers, result422);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = InternalError.fromJS(resultData500);
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse>(null as any);
+    }
+
+    /**
+     * @return Ok
+     */
     generatePayout(body: PayoutRouteParams): Promise<FileResponse> {
         let url_ = this.baseUrl + "/payout";
         url_ = url_.replace(/[?&]$/, "");
@@ -679,6 +738,175 @@ export interface IFineRouteParams {
     settings: FileSettings;
 }
 
+export class Identity implements IIdentity {
+    firstName!: string;
+    lastNamePreposition!: string;
+    lastName!: string;
+    fullName!: string;
+    function?: string;
+
+    constructor(data?: IIdentity) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.firstName = _data["firstName"];
+            this.lastNamePreposition = _data["lastNamePreposition"];
+            this.lastName = _data["lastName"];
+            this.fullName = _data["fullName"];
+            this.function = _data["function"];
+        }
+    }
+
+    static fromJS(data: any): Identity {
+        data = typeof data === 'object' ? data : {};
+        let result = new Identity();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["firstName"] = this.firstName;
+        data["lastNamePreposition"] = this.lastNamePreposition;
+        data["lastName"] = this.lastName;
+        data["fullName"] = this.fullName;
+        data["function"] = this.function;
+        return data;
+    }
+}
+
+export interface IIdentity {
+    firstName: string;
+    lastNamePreposition: string;
+    lastName: string;
+    fullName: string;
+    function?: string;
+}
+
+export class UserReportParameters implements IUserReportParameters {
+    startDate!: Date;
+    endDate!: Date;
+    entries!: Product[];
+    total!: TotalPricing;
+    description?: string;
+    account!: Identity;
+    type!: UserReportParametersType;
+
+    constructor(data?: IUserReportParameters) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.entries = [];
+            this.total = new TotalPricing();
+            this.account = new Identity();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.startDate = _data["startDate"] ? new Date(_data["startDate"].toString()) : <any>undefined;
+            this.endDate = _data["endDate"] ? new Date(_data["endDate"].toString()) : <any>undefined;
+            if (Array.isArray(_data["entries"])) {
+                this.entries = [] as any;
+                for (let item of _data["entries"])
+                    this.entries!.push(Product.fromJS(item));
+            }
+            this.total = _data["total"] ? TotalPricing.fromJS(_data["total"]) : new TotalPricing();
+            this.description = _data["description"];
+            this.account = _data["account"] ? Identity.fromJS(_data["account"]) : new Identity();
+            this.type = _data["type"];
+        }
+    }
+
+    static fromJS(data: any): UserReportParameters {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserReportParameters();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["startDate"] = this.startDate ? this.startDate.toISOString() : <any>undefined;
+        data["endDate"] = this.endDate ? this.endDate.toISOString() : <any>undefined;
+        if (Array.isArray(this.entries)) {
+            data["entries"] = [];
+            for (let item of this.entries)
+                data["entries"].push(item.toJSON());
+        }
+        data["total"] = this.total ? this.total.toJSON() : <any>undefined;
+        data["description"] = this.description;
+        data["account"] = this.account ? this.account.toJSON() : <any>undefined;
+        data["type"] = this.type;
+        return data;
+    }
+}
+
+export interface IUserReportParameters {
+    startDate: Date;
+    endDate: Date;
+    entries: Product[];
+    total: TotalPricing;
+    description?: string;
+    account: Identity;
+    type: UserReportParametersType;
+}
+
+export class UserRouteParams implements IUserRouteParams {
+    params!: UserReportParameters;
+    settings!: FileSettings;
+
+    constructor(data?: IUserRouteParams) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.params = new UserReportParameters();
+            this.settings = new FileSettings();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.params = _data["params"] ? UserReportParameters.fromJS(_data["params"]) : new UserReportParameters();
+            this.settings = _data["settings"] ? FileSettings.fromJS(_data["settings"]) : new FileSettings();
+        }
+    }
+
+    static fromJS(data: any): UserRouteParams {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserRouteParams();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["params"] = this.params ? this.params.toJSON() : <any>undefined;
+        data["settings"] = this.settings ? this.settings.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IUserRouteParams {
+    params: UserReportParameters;
+    settings: FileSettings;
+}
+
 export class Payout implements IPayout {
     bankAccountName!: string;
     bankAccountNumber!: string;
@@ -821,58 +1049,6 @@ export interface IPayoutRouteParams {
 export enum ContractType {
     Contract = "contract",
     Quote = "quote",
-}
-
-export class Identity implements IIdentity {
-    firstName!: string;
-    lastNamePreposition!: string;
-    lastName!: string;
-    fullName!: string;
-    function?: string;
-
-    constructor(data?: IIdentity) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.firstName = _data["firstName"];
-            this.lastNamePreposition = _data["lastNamePreposition"];
-            this.lastName = _data["lastName"];
-            this.fullName = _data["fullName"];
-            this.function = _data["function"];
-        }
-    }
-
-    static fromJS(data: any): Identity {
-        data = typeof data === 'object' ? data : {};
-        let result = new Identity();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["firstName"] = this.firstName;
-        data["lastNamePreposition"] = this.lastNamePreposition;
-        data["lastName"] = this.lastName;
-        data["fullName"] = this.fullName;
-        data["function"] = this.function;
-        return data;
-    }
-}
-
-export interface IIdentity {
-    firstName: string;
-    lastNamePreposition: string;
-    lastName: string;
-    fullName: string;
-    function?: string;
 }
 
 export class Dates implements IDates {
@@ -1490,6 +1666,11 @@ export enum ValidateErrorJSONMessage {
 
 export enum InternalErrorMessage {
     Internal_Server_Error = "Internal Server Error",
+}
+
+export enum UserReportParametersType {
+    Sales = "sales",
+    Purchases = "purchases",
 }
 
 export interface FileResponse {
