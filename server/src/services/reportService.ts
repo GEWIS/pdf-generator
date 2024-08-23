@@ -4,6 +4,17 @@ import { replaceAll } from '../helpers/replaceAll';
 import finishFileGeneration, { FileSettings, Stationery } from '../helpers/fileManager';
 import path from 'path';
 import createPricingTable, { Product, TotalPricing } from '../helpers/componentGenerator';
+import { Identity } from './letterService';
+
+export interface UserReportParameters {
+  startDate: Date;
+  endDate: Date;
+  entries: Product[];
+  total: TotalPricing;
+  description?: string;
+  account: Identity;
+  type: 'sales' | 'purchases';
+}
 
 export interface FineReportParameters {
   startDate: Date;
@@ -20,6 +31,8 @@ export default class ReportService {
 
   private readonly fineReportName: string;
 
+  private readonly userReportName: string;
+
   private readonly workDir: string;
 
   constructor() {
@@ -28,6 +41,7 @@ export default class ReportService {
       !process.env.STATIONERY_DIR_GEWIS ||
       !process.env.STATIONERY_DIR_BAC ||
       !process.env.FINE_REPORT_NAME ||
+      !process.env.USER_REPORT_NAME ||
       !process.env.WORK_DIR
     )
       throw new ApiError(
@@ -39,6 +53,7 @@ export default class ReportService {
     this.stationeryDirGEWIS = process.env.STATIONERY_DIR_GEWIS;
     this.stationeryDirBAC = process.env.STATIONERY_DIR_BAC;
     this.fineReportName = process.env.FINE_REPORT_NAME;
+    this.userReportName = process.env.USER_REPORT_NAME;
     this.workDir = process.env.WORK_DIR;
   }
 
@@ -96,4 +111,66 @@ export default class ReportService {
       settings.stationery === Stationery.GEWIS ? this.stationeryDirGEWIS : this.stationeryDirBAC
     );
   }
+
+  /**
+   * Generate a user report based on sales / purchase data.
+   * @param settings
+   * @param parameters
+   */
+  public async generateUserReport(
+    settings: FileSettings,
+    parameters: UserReportParameters,
+  ): Promise<string> {
+    // Read template file
+    let fileBuffer: Buffer | void = await asyncFileSystem
+      .readFile(
+        path.join(
+          this.templateDir,
+          this.userReportName
+        )
+      )
+      .catch((e: Error): void => {
+        throw new ApiError(
+          HTTPStatus.InternalServerError,
+          'Template files for reports are (temporarily) missing. \n\n' + e
+        );
+      });
+    let report: string = fileBuffer!.toString();
+
+    report = replaceAll(
+      report,
+      '{{periodstart}}',
+      parameters.startDate.toLocaleDateString('nl-NL')
+    );
+    report = replaceAll(
+      report,
+      '{{periodend}}',
+      parameters.endDate.toLocaleDateString('nl-NL')
+    );
+
+    const { startDate, endDate } = parameters;
+    report = replaceAll(report, '{{type}}', parameters.type);
+    report = replaceAll(report, '{{startdateday}}', startDate.getDate().toString());
+    report = replaceAll(report, '{{startdatemonth}}', (startDate.getMonth() + 1).toString());
+    report = replaceAll(report, '{{startdateyear}}', startDate.getFullYear().toString());
+
+    if (parameters.description) {
+      report = replaceAll(report, '{{description}}', parameters.description);
+    }
+
+    report = replaceAll(report, '{{enddateday}}', endDate.getDate().toString());
+    report = replaceAll(report, '{{enddatemonth}}', (endDate.getMonth() + 1).toString());
+    report = replaceAll(report, '{{enddateyear}}', endDate.getFullYear().toString());
+    report = replaceAll(report, '{{recipient}}', parameters.account.fullName);
+
+    report = createPricingTable(report, parameters.entries, parameters.total, 'entries');
+
+    return finishFileGeneration(
+      report,
+      settings.fileType,
+      this.workDir,
+      settings.stationery === Stationery.GEWIS ? this.stationeryDirGEWIS : this.stationeryDirBAC
+    );
+  }
+
 }
