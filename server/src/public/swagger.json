@@ -374,6 +374,68 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"SellerPayoutParameters": {
+				"properties": {
+					"startDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"entries": {
+						"items": {
+							"$ref": "#/components/schemas/Product"
+						},
+						"type": "array"
+					},
+					"total": {
+						"$ref": "#/components/schemas/TotalPricing"
+					},
+					"description": {
+						"type": "string"
+					},
+					"reference": {
+						"type": "string"
+					},
+					"debtorId": {
+						"type": "number",
+						"format": "double"
+					},
+					"account": {
+						"$ref": "#/components/schemas/Identity"
+					}
+				},
+				"required": [
+					"startDate",
+					"endDate",
+					"entries",
+					"total",
+					"description",
+					"reference",
+					"debtorId",
+					"account"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SellerPayoutRouteParams": {
+				"properties": {
+					"params": {
+						"$ref": "#/components/schemas/SellerPayoutParameters"
+					},
+					"settings": {
+						"$ref": "#/components/schemas/FileSettings"
+					}
+				},
+				"required": [
+					"params",
+					"settings"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"ContractType": {
 				"enum": [
 					"contract",
@@ -782,7 +844,7 @@
 				}
 			}
 		},
-		"/payout": {
+		"/payout/user": {
 			"post": {
 				"operationId": "GeneratePayout",
 				"responses": {
@@ -827,6 +889,56 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/PayoutRouteParams"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/payout/disbursement": {
+			"post": {
+				"operationId": "GenerateDisbursement",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/pdf+tex": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Failed",
+						"content": {
+							"application/pdf+tex": {
+								"schema": {
+									"$ref": "#/components/schemas/ValidateErrorJSON"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/pdf+tex": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalError"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Payout"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SellerPayoutRouteParams"
 							}
 						}
 					}

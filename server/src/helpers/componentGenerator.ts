@@ -100,6 +100,13 @@ export function createPayoutEntry(file: string, payout: Payout): string {
   return file;
 }
 
+export function createSellerPayoutEntry(file: string, amount: number, account: string, reference: string): string {
+  let payoutEntry: string = '';
+  payoutEntry += `\\euro${convertNumberToCurrency(amount)} & ${account} & ${reference}\\\\\n`;
+  file = replaceAll(file, '{{payoutentry}}', payoutEntry);
+  return file;
+}
+
 /**
  * Replace the specification list placeholders in the .tex file with the actual specifications
  * @param file {string} The .tex file parsed as a string

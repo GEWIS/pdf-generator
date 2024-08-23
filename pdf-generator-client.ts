@@ -140,7 +140,7 @@ export class Client {
      * @return Ok
      */
     generatePayout(body: PayoutRouteParams): Promise<FileResponse> {
-        let url_ = this.baseUrl + "/payout";
+        let url_ = this.baseUrl + "/payout/user";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(body);
@@ -160,6 +160,65 @@ export class Client {
     }
 
     protected processGeneratePayout(response: Response): Promise<FileResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status === 422) {
+            return response.text().then((_responseText) => {
+            let result422: any = null;
+            let resultData422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result422 = ValidateErrorJSON.fromJS(resultData422);
+            return throwException("Validation Failed", status, _responseText, _headers, result422);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = InternalError.fromJS(resultData500);
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse>(null as any);
+    }
+
+    /**
+     * @return Ok
+     */
+    generateDisbursement(body: SellerPayoutRouteParams): Promise<FileResponse> {
+        let url_ = this.baseUrl + "/payout/disbursement";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/pdf+tex"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGenerateDisbursement(_response);
+        });
+    }
+
+    protected processGenerateDisbursement(response: Response): Promise<FileResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200 || status === 206) {
@@ -1043,6 +1102,127 @@ export class PayoutRouteParams implements IPayoutRouteParams {
 
 export interface IPayoutRouteParams {
     params: PayoutParameters;
+    settings: FileSettings;
+}
+
+export class SellerPayoutParameters implements ISellerPayoutParameters {
+    startDate!: Date;
+    endDate!: Date;
+    entries!: Product[];
+    total!: TotalPricing;
+    description!: string;
+    reference!: string;
+    debtorId!: number;
+    account!: Identity;
+
+    constructor(data?: ISellerPayoutParameters) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.entries = [];
+            this.total = new TotalPricing();
+            this.account = new Identity();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.startDate = _data["startDate"] ? new Date(_data["startDate"].toString()) : <any>undefined;
+            this.endDate = _data["endDate"] ? new Date(_data["endDate"].toString()) : <any>undefined;
+            if (Array.isArray(_data["entries"])) {
+                this.entries = [] as any;
+                for (let item of _data["entries"])
+                    this.entries!.push(Product.fromJS(item));
+            }
+            this.total = _data["total"] ? TotalPricing.fromJS(_data["total"]) : new TotalPricing();
+            this.description = _data["description"];
+            this.reference = _data["reference"];
+            this.debtorId = _data["debtorId"];
+            this.account = _data["account"] ? Identity.fromJS(_data["account"]) : new Identity();
+        }
+    }
+
+    static fromJS(data: any): SellerPayoutParameters {
+        data = typeof data === 'object' ? data : {};
+        let result = new SellerPayoutParameters();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["startDate"] = this.startDate ? this.startDate.toISOString() : <any>undefined;
+        data["endDate"] = this.endDate ? this.endDate.toISOString() : <any>undefined;
+        if (Array.isArray(this.entries)) {
+            data["entries"] = [];
+            for (let item of this.entries)
+                data["entries"].push(item.toJSON());
+        }
+        data["total"] = this.total ? this.total.toJSON() : <any>undefined;
+        data["description"] = this.description;
+        data["reference"] = this.reference;
+        data["debtorId"] = this.debtorId;
+        data["account"] = this.account ? this.account.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface ISellerPayoutParameters {
+    startDate: Date;
+    endDate: Date;
+    entries: Product[];
+    total: TotalPricing;
+    description: string;
+    reference: string;
+    debtorId: number;
+    account: Identity;
+}
+
+export class SellerPayoutRouteParams implements ISellerPayoutRouteParams {
+    params!: SellerPayoutParameters;
+    settings!: FileSettings;
+
+    constructor(data?: ISellerPayoutRouteParams) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.params = new SellerPayoutParameters();
+            this.settings = new FileSettings();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.params = _data["params"] ? SellerPayoutParameters.fromJS(_data["params"]) : new SellerPayoutParameters();
+            this.settings = _data["settings"] ? FileSettings.fromJS(_data["settings"]) : new FileSettings();
+        }
+    }
+
+    static fromJS(data: any): SellerPayoutRouteParams {
+        data = typeof data === 'object' ? data : {};
+        let result = new SellerPayoutRouteParams();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["params"] = this.params ? this.params.toJSON() : <any>undefined;
+        data["settings"] = this.settings ? this.settings.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface ISellerPayoutRouteParams {
+    params: SellerPayoutParameters;
     settings: FileSettings;
 }
 

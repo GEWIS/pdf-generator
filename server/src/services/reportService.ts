@@ -4,7 +4,7 @@ import { replaceAll } from '../helpers/replaceAll';
 import finishFileGeneration, { FileSettings, Stationery } from '../helpers/fileManager';
 import path from 'path';
 import createPricingTable, { Product, TotalPricing } from '../helpers/componentGenerator';
-import { Identity } from "./letterService";
+import { Identity } from './letterService';
 
 export interface UserReportParameters {
   startDate: Date;

@@ -1,7 +1,7 @@
-var k = Object.defineProperty;
-var G = (c, e, t) => e in c ? k(c, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : c[e] = t;
-var i = (c, e, t) => (G(c, typeof e != "symbol" ? e + "" : e, t), t);
-class Q {
+var $ = Object.defineProperty;
+var F = (c, e, t) => e in c ? $(c, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : c[e] = t;
+var i = (c, e, t) => (F(c, typeof e != "symbol" ? e + "" : e, t), t);
+class K {
   constructor(e, t) {
     i(this, "http");
     i(this, "baseUrl");
@@ -30,7 +30,7 @@ class Q {
     if (e.headers && e.headers.forEach && e.headers.forEach((s, r) => o[r] = s), t === 200 || t === 206) {
       const s = e.headers ? e.headers.get("content-disposition") : void 0;
       let r = s ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(s) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
-      return n ? n = decodeURIComponent(n) : (r = s ? /filename="?([^"]*?)"?(;|$)/g.exec(s) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((v) => ({ fileName: n, data: v, status: t, headers: o }));
+      return n ? n = decodeURIComponent(n) : (r = s ? /filename="?([^"]*?)"?(;|$)/g.exec(s) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
     } else {
       if (t === 422)
         return e.text().then((s) => {
@@ -69,7 +69,7 @@ class Q {
     if (e.headers && e.headers.forEach && e.headers.forEach((s, r) => o[r] = s), t === 200 || t === 206) {
       const s = e.headers ? e.headers.get("content-disposition") : void 0;
       let r = s ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(s) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
-      return n ? n = decodeURIComponent(n) : (r = s ? /filename="?([^"]*?)"?(;|$)/g.exec(s) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((v) => ({ fileName: n, data: v, status: t, headers: o }));
+      return n ? n = decodeURIComponent(n) : (r = s ? /filename="?([^"]*?)"?(;|$)/g.exec(s) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
     } else {
       if (t === 422)
         return e.text().then((s) => {
@@ -90,7 +90,7 @@ class Q {
    * @return Ok
    */
   generatePayout(e) {
-    let t = this.baseUrl + "/payout";
+    let t = this.baseUrl + "/payout/user";
     t = t.replace(/[?&]$/, "");
     let s = {
       body: JSON.stringify(e),
@@ -108,7 +108,46 @@ class Q {
     if (e.headers && e.headers.forEach && e.headers.forEach((s, r) => o[r] = s), t === 200 || t === 206) {
       const s = e.headers ? e.headers.get("content-disposition") : void 0;
       let r = s ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(s) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
-      return n ? n = decodeURIComponent(n) : (r = s ? /filename="?([^"]*?)"?(;|$)/g.exec(s) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((v) => ({ fileName: n, data: v, status: t, headers: o }));
+      return n ? n = decodeURIComponent(n) : (r = s ? /filename="?([^"]*?)"?(;|$)/g.exec(s) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
+    } else {
+      if (t === 422)
+        return e.text().then((s) => {
+          let r = null, n = s === "" ? null : JSON.parse(s, this.jsonParseReviver);
+          return r = J.fromJS(n), l("Validation Failed", t, s, o, r);
+        });
+      if (t === 500)
+        return e.text().then((s) => {
+          let r = null, n = s === "" ? null : JSON.parse(s, this.jsonParseReviver);
+          return r = y.fromJS(n), l("Internal Server Error", t, s, o, r);
+        });
+      if (t !== 200 && t !== 204)
+        return e.text().then((s) => l("An unexpected server error occurred.", t, s, o));
+    }
+    return Promise.resolve(null);
+  }
+  /**
+   * @return Ok
+   */
+  generateDisbursement(e) {
+    let t = this.baseUrl + "/payout/disbursement";
+    t = t.replace(/[?&]$/, "");
+    let s = {
+      body: JSON.stringify(e),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/pdf+tex"
+      }
+    };
+    return this.http.fetch(t, s).then((r) => this.processGenerateDisbursement(r));
+  }
+  processGenerateDisbursement(e) {
+    const t = e.status;
+    let o = {};
+    if (e.headers && e.headers.forEach && e.headers.forEach((s, r) => o[r] = s), t === 200 || t === 206) {
+      const s = e.headers ? e.headers.get("content-disposition") : void 0;
+      let r = s ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(s) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
+      return n ? n = decodeURIComponent(n) : (r = s ? /filename="?([^"]*?)"?(;|$)/g.exec(s) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
     } else {
       if (t === 422)
         return e.text().then((s) => {
@@ -149,7 +188,7 @@ class Q {
     if (e.headers && e.headers.forEach && e.headers.forEach((s, r) => o[r] = s), t === 200 || t === 206) {
       const s = e.headers ? e.headers.get("content-disposition") : void 0;
       let r = s ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(s) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
-      return n ? n = decodeURIComponent(n) : (r = s ? /filename="?([^"]*?)"?(;|$)/g.exec(s) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((v) => ({ fileName: n, data: v, status: t, headers: o }));
+      return n ? n = decodeURIComponent(n) : (r = s ? /filename="?([^"]*?)"?(;|$)/g.exec(s) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
     } else {
       if (t === 422)
         return e.text().then((s) => {
@@ -190,7 +229,7 @@ class Q {
     if (e.headers && e.headers.forEach && e.headers.forEach((s, r) => o[r] = s), t === 200 || t === 206) {
       const s = e.headers ? e.headers.get("content-disposition") : void 0;
       let r = s ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(s) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
-      return n ? n = decodeURIComponent(n) : (r = s ? /filename="?([^"]*?)"?(;|$)/g.exec(s) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((v) => ({ fileName: n, data: v, status: t, headers: o }));
+      return n ? n = decodeURIComponent(n) : (r = s ? /filename="?([^"]*?)"?(;|$)/g.exec(s) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
     } else {
       if (t === 422)
         return e.text().then((s) => {
@@ -257,7 +296,7 @@ class y {
     return e = typeof e == "object" ? e : {}, e.message = this.message, e;
   }
 }
-var $ = /* @__PURE__ */ ((c) => (c.ZERO = "ZERO", c.LOW = "LOW", c.HIGH = "HIGH", c))($ || {});
+var z = /* @__PURE__ */ ((c) => (c.ZERO = "ZERO", c.LOW = "LOW", c.HIGH = "HIGH", c))(z || {});
 class w {
   constructor(e) {
     i(this, "basePrice");
@@ -327,7 +366,7 @@ class f {
     return e = typeof e == "object" ? e : {}, e.exclVat = this.exclVat, e.lowVat = this.lowVat, e.highVat = this.highVat, e.inclVat = this.inclVat, e;
   }
 }
-class N {
+class O {
   constructor(e) {
     i(this, "startDate");
     i(this, "endDate");
@@ -350,7 +389,7 @@ class N {
   }
   static fromJS(e) {
     e = typeof e == "object" ? e : {};
-    let t = new N();
+    let t = new O();
     return t.init(e), t;
   }
   toJSON(e) {
@@ -362,7 +401,7 @@ class N {
     return e.total = this.total ? this.total.toJSON() : void 0, e;
   }
 }
-var z = /* @__PURE__ */ ((c) => (c.DUTCH = "DUTCH", c.ENGLISH = "ENGLISH", c))(z || {}), F = /* @__PURE__ */ ((c) => (c.PDF = "PDF", c.TEX = "TEX", c))(F || {});
+var H = /* @__PURE__ */ ((c) => (c.DUTCH = "DUTCH", c.ENGLISH = "ENGLISH", c))(H || {}), q = /* @__PURE__ */ ((c) => (c.PDF = "PDF", c.TEX = "TEX", c))(q || {});
 class u {
   constructor(e) {
     i(this, "name");
@@ -393,10 +432,10 @@ class C {
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
-    e || (this.params = new N(), this.settings = new u());
+    e || (this.params = new O(), this.settings = new u());
   }
   init(e) {
-    e && (this.params = e.params ? N.fromJS(e.params) : new N(), this.settings = e.settings ? u.fromJS(e.settings) : new u());
+    e && (this.params = e.params ? O.fromJS(e.params) : new O(), this.settings = e.settings ? u.fromJS(e.settings) : new u());
   }
   static fromJS(e) {
     e = typeof e == "object" ? e : {};
@@ -430,7 +469,7 @@ class h {
     return e = typeof e == "object" ? e : {}, e.firstName = this.firstName, e.lastNamePreposition = this.lastNamePreposition, e.lastName = this.lastName, e.fullName = this.fullName, e.function = this.function, e;
   }
 }
-class O {
+class N {
   constructor(e) {
     i(this, "startDate");
     i(this, "endDate");
@@ -456,7 +495,7 @@ class O {
   }
   static fromJS(e) {
     e = typeof e == "object" ? e : {};
-    let t = new O();
+    let t = new N();
     return t.init(e), t;
   }
   toJSON(e) {
@@ -475,10 +514,10 @@ class E {
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
-    e || (this.params = new O(), this.settings = new u());
+    e || (this.params = new N(), this.settings = new u());
   }
   init(e) {
-    e && (this.params = e.params ? O.fromJS(e.params) : new O(), this.settings = e.settings ? u.fromJS(e.settings) : new u());
+    e && (this.params = e.params ? N.fromJS(e.params) : new N(), this.settings = e.settings ? u.fromJS(e.settings) : new u());
   }
   static fromJS(e) {
     e = typeof e == "object" ? e : {};
@@ -533,7 +572,7 @@ class D {
     return e = typeof e == "object" ? e : {}, e.payout = this.payout ? this.payout.toJSON() : void 0, e;
   }
 }
-class I {
+class x {
   constructor(e) {
     i(this, "params");
     i(this, "settings");
@@ -547,15 +586,75 @@ class I {
   }
   static fromJS(e) {
     e = typeof e == "object" ? e : {};
-    let t = new I();
+    let t = new x();
     return t.init(e), t;
   }
   toJSON(e) {
     return e = typeof e == "object" ? e : {}, e.params = this.params ? this.params.toJSON() : void 0, e.settings = this.settings ? this.settings.toJSON() : void 0, e;
   }
 }
-var H = /* @__PURE__ */ ((c) => (c.Contract = "contract", c.Quote = "quote", c))(H || {});
-class m {
+class j {
+  constructor(e) {
+    i(this, "startDate");
+    i(this, "endDate");
+    i(this, "entries");
+    i(this, "total");
+    i(this, "description");
+    i(this, "reference");
+    i(this, "debtorId");
+    i(this, "account");
+    if (e)
+      for (var t in e)
+        e.hasOwnProperty(t) && (this[t] = e[t]);
+    e || (this.entries = [], this.total = new f(), this.account = new h());
+  }
+  init(e) {
+    if (e) {
+      if (this.startDate = e.startDate ? new Date(e.startDate.toString()) : void 0, this.endDate = e.endDate ? new Date(e.endDate.toString()) : void 0, Array.isArray(e.entries)) {
+        this.entries = [];
+        for (let t of e.entries)
+          this.entries.push(g.fromJS(t));
+      }
+      this.total = e.total ? f.fromJS(e.total) : new f(), this.description = e.description, this.reference = e.reference, this.debtorId = e.debtorId, this.account = e.account ? h.fromJS(e.account) : new h();
+    }
+  }
+  static fromJS(e) {
+    e = typeof e == "object" ? e : {};
+    let t = new j();
+    return t.init(e), t;
+  }
+  toJSON(e) {
+    if (e = typeof e == "object" ? e : {}, e.startDate = this.startDate ? this.startDate.toISOString() : void 0, e.endDate = this.endDate ? this.endDate.toISOString() : void 0, Array.isArray(this.entries)) {
+      e.entries = [];
+      for (let t of this.entries)
+        e.entries.push(t.toJSON());
+    }
+    return e.total = this.total ? this.total.toJSON() : void 0, e.description = this.description, e.reference = this.reference, e.debtorId = this.debtorId, e.account = this.account ? this.account.toJSON() : void 0, e;
+  }
+}
+class V {
+  constructor(e) {
+    i(this, "params");
+    i(this, "settings");
+    if (e)
+      for (var t in e)
+        e.hasOwnProperty(t) && (this[t] = e[t]);
+    e || (this.params = new j(), this.settings = new u());
+  }
+  init(e) {
+    e && (this.params = e.params ? j.fromJS(e.params) : new j(), this.settings = e.settings ? u.fromJS(e.settings) : new u());
+  }
+  static fromJS(e) {
+    e = typeof e == "object" ? e : {};
+    let t = new V();
+    return t.init(e), t;
+  }
+  toJSON(e) {
+    return e = typeof e == "object" ? e : {}, e.params = this.params ? this.params.toJSON() : void 0, e.settings = this.settings ? this.settings.toJSON() : void 0, e;
+  }
+}
+var M = /* @__PURE__ */ ((c) => (c.Contract = "contract", c.Quote = "quote", c))(M || {});
+class p {
   constructor(e) {
     i(this, "date");
     i(this, "dueDate");
@@ -571,14 +670,14 @@ class m {
   }
   static fromJS(e) {
     e = typeof e == "object" ? e : {};
-    let t = new m();
+    let t = new p();
     return t.init(e), t;
   }
   toJSON(e) {
     return e = typeof e == "object" ? e : {}, e.date = this.date ? this.date.toISOString() : void 0, e.dueDate = this.dueDate ? this.dueDate.toISOString() : void 0, e.dueDays = this.dueDays, e.startDate = this.startDate ? this.startDate.toISOString() : void 0, e.endDate = this.endDate ? this.endDate.toISOString() : void 0, e;
   }
 }
-class p {
+class S {
   constructor(e) {
     i(this, "name");
     i(this, "id");
@@ -591,14 +690,14 @@ class p {
   }
   static fromJS(e) {
     e = typeof e == "object" ? e : {};
-    let t = new p();
+    let t = new S();
     return t.init(e), t;
   }
   toJSON(e) {
     return e = typeof e == "object" ? e : {}, e.name = this.name, e.id = this.id, e;
   }
 }
-class S {
+class v {
   constructor(e) {
     i(this, "street");
     i(this, "postalCode");
@@ -613,14 +712,14 @@ class S {
   }
   static fromJS(e) {
     e = typeof e == "object" ? e : {};
-    let t = new S();
+    let t = new v();
     return t.init(e), t;
   }
   toJSON(e) {
     return e = typeof e == "object" ? e : {}, e.street = this.street, e.postalCode = this.postalCode, e.city = this.city, e.country = this.country, e;
   }
 }
-class A {
+class R {
   constructor(e) {
     i(this, "ourReference");
     i(this, "yourReference");
@@ -633,14 +732,14 @@ class A {
   }
   static fromJS(e) {
     e = typeof e == "object" ? e : {};
-    let t = new A();
+    let t = new R();
     return t.init(e), t;
   }
   toJSON(e) {
     return e = typeof e == "object" ? e : {}, e.ourReference = this.ourReference, e.yourReference = this.yourReference, e;
   }
 }
-class j {
+class P {
   constructor(e) {
     i(this, "subject");
     i(this, "sender");
@@ -656,11 +755,11 @@ class j {
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
-    e || (this.sender = new h(), this.recipient = new h(), this.dates = new m(), this.company = new p(), this.address = new S(), this.products = [], this.pricing = new f(), this.firstSignee = new h(), this.secondSignee = new h());
+    e || (this.sender = new h(), this.recipient = new h(), this.dates = new p(), this.company = new S(), this.address = new v(), this.products = [], this.pricing = new f(), this.firstSignee = new h(), this.secondSignee = new h());
   }
   init(e) {
     if (e) {
-      if (this.subject = e.subject, this.sender = e.sender ? h.fromJS(e.sender) : new h(), this.recipient = e.recipient ? h.fromJS(e.recipient) : new h(), this.dates = e.dates ? m.fromJS(e.dates) : new m(), this.company = e.company ? p.fromJS(e.company) : new p(), this.address = e.address ? S.fromJS(e.address) : new S(), this.reference = e.reference ? A.fromJS(e.reference) : void 0, Array.isArray(e.products)) {
+      if (this.subject = e.subject, this.sender = e.sender ? h.fromJS(e.sender) : new h(), this.recipient = e.recipient ? h.fromJS(e.recipient) : new h(), this.dates = e.dates ? p.fromJS(e.dates) : new p(), this.company = e.company ? S.fromJS(e.company) : new S(), this.address = e.address ? v.fromJS(e.address) : new v(), this.reference = e.reference ? R.fromJS(e.reference) : void 0, Array.isArray(e.products)) {
         this.products = [];
         for (let t of e.products)
           this.products.push(g.fromJS(t));
@@ -670,7 +769,7 @@ class j {
   }
   static fromJS(e) {
     e = typeof e == "object" ? e : {};
-    let t = new j();
+    let t = new P();
     return t.init(e), t;
   }
   toJSON(e) {
@@ -680,145 +779,6 @@ class j {
         e.products.push(t.toJSON());
     }
     return e.pricing = this.pricing ? this.pricing.toJSON() : void 0, e.firstSignee = this.firstSignee ? this.firstSignee.toJSON() : void 0, e.secondSignee = this.secondSignee ? this.secondSignee.toJSON() : void 0, e;
-  }
-}
-class x {
-  constructor(e) {
-    i(this, "params");
-    i(this, "settings");
-    if (e)
-      for (var t in e)
-        e.hasOwnProperty(t) && (this[t] = e[t]);
-    e || (this.params = new j(), this.settings = new u());
-  }
-  init(e) {
-    e && (this.params = e.params ? j.fromJS(e.params) : new j(), this.settings = e.settings ? u.fromJS(e.settings) : new u());
-  }
-  static fromJS(e) {
-    e = typeof e == "object" ? e : {};
-    let t = new x();
-    return t.init(e), t;
-  }
-  toJSON(e) {
-    return e = typeof e == "object" ? e : {}, e.params = this.params ? this.params.toJSON() : void 0, e.settings = this.settings ? this.settings.toJSON() : void 0, e;
-  }
-}
-var q = /* @__PURE__ */ ((c) => (c.Invoice = "invoice", c.Weeklysales = "weeklysales", c.Creditnota = "creditnota", c))(q || {});
-class R {
-  constructor(e) {
-    i(this, "ourReference");
-    i(this, "yourReference");
-    i(this, "costCenter");
-    if (e)
-      for (var t in e)
-        e.hasOwnProperty(t) && (this[t] = e[t]);
-  }
-  init(e) {
-    e && (this.ourReference = e.ourReference, this.yourReference = e.yourReference, this.costCenter = e.costCenter);
-  }
-  static fromJS(e) {
-    e = typeof e == "object" ? e : {};
-    let t = new R();
-    return t.init(e), t;
-  }
-  toJSON(e) {
-    return e = typeof e == "object" ? e : {}, e.ourReference = this.ourReference, e.yourReference = this.yourReference, e.costCenter = this.costCenter, e;
-  }
-}
-class V {
-  constructor(e) {
-    i(this, "products");
-    i(this, "pricing");
-    i(this, "subject");
-    i(this, "sender");
-    i(this, "recipient");
-    i(this, "dates");
-    i(this, "company");
-    i(this, "address");
-    if (e)
-      for (var t in e)
-        e.hasOwnProperty(t) && (this[t] = e[t]);
-    e || (this.products = [], this.pricing = new f(), this.sender = new h(), this.recipient = new h(), this.dates = new m(), this.company = new p(), this.address = new S());
-  }
-  init(e) {
-    if (e) {
-      for (var t in e)
-        e.hasOwnProperty(t) && (this[t] = e[t]);
-      if (Array.isArray(e.products)) {
-        this.products = [];
-        for (let o of e.products)
-          this.products.push(g.fromJS(o));
-      }
-      this.pricing = e.pricing ? f.fromJS(e.pricing) : new f(), this.subject = e.subject, this.sender = e.sender ? h.fromJS(e.sender) : new h(), this.recipient = e.recipient ? h.fromJS(e.recipient) : new h(), this.dates = e.dates ? m.fromJS(e.dates) : new m(), this.company = e.company ? p.fromJS(e.company) : new p(), this.address = e.address ? S.fromJS(e.address) : new S();
-    }
-  }
-  static fromJS(e) {
-    e = typeof e == "object" ? e : {};
-    let t = new V();
-    return t.init(e), t;
-  }
-  toJSON(e) {
-    e = typeof e == "object" ? e : {};
-    for (var t in this)
-      this.hasOwnProperty(t) && (e[t] = this[t]);
-    if (Array.isArray(this.products)) {
-      e.products = [];
-      for (let o of this.products)
-        e.products.push(o.toJSON());
-    }
-    return e.pricing = this.pricing ? this.pricing.toJSON() : void 0, e.subject = this.subject, e.sender = this.sender ? this.sender.toJSON() : void 0, e.recipient = this.recipient ? this.recipient.toJSON() : void 0, e.dates = this.dates ? this.dates.toJSON() : void 0, e.company = this.company ? this.company.toJSON() : void 0, e.address = this.address ? this.address.toJSON() : void 0, e;
-  }
-}
-class P {
-  constructor(e) {
-    i(this, "products");
-    i(this, "pricing");
-    i(this, "subject");
-    i(this, "sender");
-    i(this, "recipient");
-    i(this, "dates");
-    i(this, "company");
-    i(this, "address");
-    i(this, "summarizedProducts");
-    i(this, "reference");
-    i(this, "description");
-    if (e)
-      for (var t in e)
-        e.hasOwnProperty(t) && (this[t] = e[t]);
-    e || (this.products = [], this.pricing = new f(), this.sender = new h(), this.recipient = new h(), this.dates = new m(), this.company = new p(), this.address = new S());
-  }
-  init(e) {
-    if (e) {
-      if (Array.isArray(e.products)) {
-        this.products = [];
-        for (let t of e.products)
-          this.products.push(g.fromJS(t));
-      }
-      if (this.pricing = e.pricing ? f.fromJS(e.pricing) : new f(), this.subject = e.subject, this.sender = e.sender ? h.fromJS(e.sender) : new h(), this.recipient = e.recipient ? h.fromJS(e.recipient) : new h(), this.dates = e.dates ? m.fromJS(e.dates) : new m(), this.company = e.company ? p.fromJS(e.company) : new p(), this.address = e.address ? S.fromJS(e.address) : new S(), Array.isArray(e.summarizedProducts)) {
-        this.summarizedProducts = [];
-        for (let t of e.summarizedProducts)
-          this.summarizedProducts.push(g.fromJS(t));
-      }
-      this.reference = e.reference ? R.fromJS(e.reference) : void 0, this.description = e.description;
-    }
-  }
-  static fromJS(e) {
-    e = typeof e == "object" ? e : {};
-    let t = new P();
-    return t.init(e), t;
-  }
-  toJSON(e) {
-    if (e = typeof e == "object" ? e : {}, Array.isArray(this.products)) {
-      e.products = [];
-      for (let t of this.products)
-        e.products.push(t.toJSON());
-    }
-    if (e.pricing = this.pricing ? this.pricing.toJSON() : void 0, e.subject = this.subject, e.sender = this.sender ? this.sender.toJSON() : void 0, e.recipient = this.recipient ? this.recipient.toJSON() : void 0, e.dates = this.dates ? this.dates.toJSON() : void 0, e.company = this.company ? this.company.toJSON() : void 0, e.address = this.address ? this.address.toJSON() : void 0, Array.isArray(this.summarizedProducts)) {
-      e.summarizedProducts = [];
-      for (let t of this.summarizedProducts)
-        e.summarizedProducts.push(t.toJSON());
-    }
-    return e.reference = this.reference ? this.reference.toJSON() : void 0, e.description = this.description, e;
   }
 }
 class U {
@@ -842,8 +802,147 @@ class U {
     return e = typeof e == "object" ? e : {}, e.params = this.params ? this.params.toJSON() : void 0, e.settings = this.settings ? this.settings.toJSON() : void 0, e;
   }
 }
-var M = /* @__PURE__ */ ((c) => (c.Validation_failed = "Validation failed", c))(M || {}), L = /* @__PURE__ */ ((c) => (c.Internal_Server_Error = "Internal Server Error", c))(L || {}), W = /* @__PURE__ */ ((c) => (c.Sales = "sales", c.Purchases = "purchases", c))(W || {});
-class X extends Error {
+var L = /* @__PURE__ */ ((c) => (c.Invoice = "invoice", c.Weeklysales = "weeklysales", c.Creditnota = "creditnota", c))(L || {});
+class I {
+  constructor(e) {
+    i(this, "ourReference");
+    i(this, "yourReference");
+    i(this, "costCenter");
+    if (e)
+      for (var t in e)
+        e.hasOwnProperty(t) && (this[t] = e[t]);
+  }
+  init(e) {
+    e && (this.ourReference = e.ourReference, this.yourReference = e.yourReference, this.costCenter = e.costCenter);
+  }
+  static fromJS(e) {
+    e = typeof e == "object" ? e : {};
+    let t = new I();
+    return t.init(e), t;
+  }
+  toJSON(e) {
+    return e = typeof e == "object" ? e : {}, e.ourReference = this.ourReference, e.yourReference = this.yourReference, e.costCenter = this.costCenter, e;
+  }
+}
+class G {
+  constructor(e) {
+    i(this, "products");
+    i(this, "pricing");
+    i(this, "subject");
+    i(this, "sender");
+    i(this, "recipient");
+    i(this, "dates");
+    i(this, "company");
+    i(this, "address");
+    if (e)
+      for (var t in e)
+        e.hasOwnProperty(t) && (this[t] = e[t]);
+    e || (this.products = [], this.pricing = new f(), this.sender = new h(), this.recipient = new h(), this.dates = new p(), this.company = new S(), this.address = new v());
+  }
+  init(e) {
+    if (e) {
+      for (var t in e)
+        e.hasOwnProperty(t) && (this[t] = e[t]);
+      if (Array.isArray(e.products)) {
+        this.products = [];
+        for (let o of e.products)
+          this.products.push(g.fromJS(o));
+      }
+      this.pricing = e.pricing ? f.fromJS(e.pricing) : new f(), this.subject = e.subject, this.sender = e.sender ? h.fromJS(e.sender) : new h(), this.recipient = e.recipient ? h.fromJS(e.recipient) : new h(), this.dates = e.dates ? p.fromJS(e.dates) : new p(), this.company = e.company ? S.fromJS(e.company) : new S(), this.address = e.address ? v.fromJS(e.address) : new v();
+    }
+  }
+  static fromJS(e) {
+    e = typeof e == "object" ? e : {};
+    let t = new G();
+    return t.init(e), t;
+  }
+  toJSON(e) {
+    e = typeof e == "object" ? e : {};
+    for (var t in this)
+      this.hasOwnProperty(t) && (e[t] = this[t]);
+    if (Array.isArray(this.products)) {
+      e.products = [];
+      for (let o of this.products)
+        e.products.push(o.toJSON());
+    }
+    return e.pricing = this.pricing ? this.pricing.toJSON() : void 0, e.subject = this.subject, e.sender = this.sender ? this.sender.toJSON() : void 0, e.recipient = this.recipient ? this.recipient.toJSON() : void 0, e.dates = this.dates ? this.dates.toJSON() : void 0, e.company = this.company ? this.company.toJSON() : void 0, e.address = this.address ? this.address.toJSON() : void 0, e;
+  }
+}
+class A {
+  constructor(e) {
+    i(this, "products");
+    i(this, "pricing");
+    i(this, "subject");
+    i(this, "sender");
+    i(this, "recipient");
+    i(this, "dates");
+    i(this, "company");
+    i(this, "address");
+    i(this, "summarizedProducts");
+    i(this, "reference");
+    i(this, "description");
+    if (e)
+      for (var t in e)
+        e.hasOwnProperty(t) && (this[t] = e[t]);
+    e || (this.products = [], this.pricing = new f(), this.sender = new h(), this.recipient = new h(), this.dates = new p(), this.company = new S(), this.address = new v());
+  }
+  init(e) {
+    if (e) {
+      if (Array.isArray(e.products)) {
+        this.products = [];
+        for (let t of e.products)
+          this.products.push(g.fromJS(t));
+      }
+      if (this.pricing = e.pricing ? f.fromJS(e.pricing) : new f(), this.subject = e.subject, this.sender = e.sender ? h.fromJS(e.sender) : new h(), this.recipient = e.recipient ? h.fromJS(e.recipient) : new h(), this.dates = e.dates ? p.fromJS(e.dates) : new p(), this.company = e.company ? S.fromJS(e.company) : new S(), this.address = e.address ? v.fromJS(e.address) : new v(), Array.isArray(e.summarizedProducts)) {
+        this.summarizedProducts = [];
+        for (let t of e.summarizedProducts)
+          this.summarizedProducts.push(g.fromJS(t));
+      }
+      this.reference = e.reference ? I.fromJS(e.reference) : void 0, this.description = e.description;
+    }
+  }
+  static fromJS(e) {
+    e = typeof e == "object" ? e : {};
+    let t = new A();
+    return t.init(e), t;
+  }
+  toJSON(e) {
+    if (e = typeof e == "object" ? e : {}, Array.isArray(this.products)) {
+      e.products = [];
+      for (let t of this.products)
+        e.products.push(t.toJSON());
+    }
+    if (e.pricing = this.pricing ? this.pricing.toJSON() : void 0, e.subject = this.subject, e.sender = this.sender ? this.sender.toJSON() : void 0, e.recipient = this.recipient ? this.recipient.toJSON() : void 0, e.dates = this.dates ? this.dates.toJSON() : void 0, e.company = this.company ? this.company.toJSON() : void 0, e.address = this.address ? this.address.toJSON() : void 0, Array.isArray(this.summarizedProducts)) {
+      e.summarizedProducts = [];
+      for (let t of this.summarizedProducts)
+        e.summarizedProducts.push(t.toJSON());
+    }
+    return e.reference = this.reference ? this.reference.toJSON() : void 0, e.description = this.description, e;
+  }
+}
+class k {
+  constructor(e) {
+    i(this, "params");
+    i(this, "settings");
+    if (e)
+      for (var t in e)
+        e.hasOwnProperty(t) && (this[t] = e[t]);
+    e || (this.params = new A(), this.settings = new u());
+  }
+  init(e) {
+    e && (this.params = e.params ? A.fromJS(e.params) : new A(), this.settings = e.settings ? u.fromJS(e.settings) : new u());
+  }
+  static fromJS(e) {
+    e = typeof e == "object" ? e : {};
+    let t = new k();
+    return t.init(e), t;
+  }
+  toJSON(e) {
+    return e = typeof e == "object" ? e : {}, e.params = this.params ? this.params.toJSON() : void 0, e.settings = this.settings ? this.settings.toJSON() : void 0, e;
+  }
+}
+var W = /* @__PURE__ */ ((c) => (c.Validation_failed = "Validation failed", c))(W || {}), X = /* @__PURE__ */ ((c) => (c.Internal_Server_Error = "Internal Server Error", c))(X || {}), Z = /* @__PURE__ */ ((c) => (c.Sales = "sales", c.Purchases = "purchases", c))(Z || {});
+class Q extends Error {
   constructor(t, o, s, r, n) {
     super();
     i(this, "message");
@@ -859,41 +958,43 @@ class X extends Error {
   }
 }
 function l(c, e, t, o, s) {
-  throw s ?? new X(c, e, t, o, null);
+  throw s ?? new Q(c, e, t, o, null);
 }
 export {
-  S as Address,
-  X as ApiException,
-  Q as Client,
-  p as Company,
-  j as ContractParameters,
-  x as ContractRouteParams,
-  H as ContractType,
-  m as Dates,
+  v as Address,
+  Q as ApiException,
+  K as Client,
+  S as Company,
+  P as ContractParameters,
+  U as ContractRouteParams,
+  M as ContractType,
+  p as Dates,
   u as FileSettings,
-  N as FineReportParameters,
+  O as FineReportParameters,
   C as FineRouteParams,
   h as Identity,
   y as InternalError,
-  L as InternalErrorMessage,
-  P as InvoiceParameters,
-  R as InvoiceReferences,
-  U as InvoiceRouteParams,
-  q as InvoiceType,
-  z as Language,
+  X as InternalErrorMessage,
+  A as InvoiceParameters,
+  I as InvoiceReferences,
+  k as InvoiceRouteParams,
+  L as InvoiceType,
+  H as Language,
   b as Payout,
   D as PayoutParameters,
-  I as PayoutRouteParams,
+  x as PayoutRouteParams,
   g as Product,
   w as ProductPricing,
-  V as Reference__,
-  A as References,
-  F as ReturnFileType,
+  G as Reference__,
+  R as References,
+  q as ReturnFileType,
+  j as SellerPayoutParameters,
+  V as SellerPayoutRouteParams,
   f as TotalPricing,
-  O as UserReportParameters,
-  W as UserReportParametersType,
+  N as UserReportParameters,
+  Z as UserReportParametersType,
   E as UserRouteParams,
-  $ as VAT,
+  z as VAT,
   J as ValidateErrorJSON,
-  M as ValidateErrorJSONMessage
+  W as ValidateErrorJSONMessage
 };

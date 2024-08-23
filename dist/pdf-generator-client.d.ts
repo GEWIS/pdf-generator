@@ -23,6 +23,11 @@ export declare class Client {
     /**
      * @return Ok
      */
+    generateDisbursement(body: SellerPayoutRouteParams): Promise<FileResponse>;
+    protected processGenerateDisbursement(response: Response): Promise<FileResponse>;
+    /**
+     * @return Ok
+     */
     generateContract(type: ContractType, body: ContractRouteParams): Promise<FileResponse>;
     protected processGenerateContract(response: Response): Promise<FileResponse>;
     /**
@@ -260,6 +265,42 @@ export declare class PayoutRouteParams implements IPayoutRouteParams {
 }
 export interface IPayoutRouteParams {
     params: PayoutParameters;
+    settings: FileSettings;
+}
+export declare class SellerPayoutParameters implements ISellerPayoutParameters {
+    startDate: Date;
+    endDate: Date;
+    entries: Product[];
+    total: TotalPricing;
+    description: string;
+    reference: string;
+    debtorId: number;
+    account: Identity;
+    constructor(data?: ISellerPayoutParameters);
+    init(_data?: any): void;
+    static fromJS(data: any): SellerPayoutParameters;
+    toJSON(data?: any): any;
+}
+export interface ISellerPayoutParameters {
+    startDate: Date;
+    endDate: Date;
+    entries: Product[];
+    total: TotalPricing;
+    description: string;
+    reference: string;
+    debtorId: number;
+    account: Identity;
+}
+export declare class SellerPayoutRouteParams implements ISellerPayoutRouteParams {
+    params: SellerPayoutParameters;
+    settings: FileSettings;
+    constructor(data?: ISellerPayoutRouteParams);
+    init(_data?: any): void;
+    static fromJS(data: any): SellerPayoutRouteParams;
+    toJSON(data?: any): any;
+}
+export interface ISellerPayoutRouteParams {
+    params: SellerPayoutParameters;
     settings: FileSettings;
 }
 export declare enum ContractType {
