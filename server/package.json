@@ -15,7 +15,7 @@
     "watch:build": "nodemon -w src -e ts --ignore routes.ts -x \"tsc && yarn run serve\"",
     "dev": "concurrently \"yarn run watch:routes\" \"yarn run watch:build\"",
     "generate:middleware": "tsoa routes && tsoa spec",
-    "templates:sync": "git clone git@github.com:GEWIS/latex-templates.git templates"
+    "templates:sync": "git clone --depth=1 git@github.com:GEWIS/latex-templates.git templates"
   },
   "keywords": [],
   "author": "",
