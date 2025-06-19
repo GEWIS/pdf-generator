@@ -6,6 +6,7 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-fonts-extra texlive-lang-all
 
+COPY yarn.lock /usr/src/app
 COPY package*.json /usr/src/app
 COPY tsconfig.json /usr/src/app
 COPY tsoa.json /usr/src/app
