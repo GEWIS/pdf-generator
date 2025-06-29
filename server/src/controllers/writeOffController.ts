@@ -9,7 +9,7 @@ export interface WriteOffRouteParams {
 }
 
 @Route('write-off')
-@Produces('application/json')
+@Produces('application/pdf+tex')
 @Tags('WriteOff')
 export class WriteOffController extends Controller {
   @Post()

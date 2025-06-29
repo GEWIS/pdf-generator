@@ -21,7 +21,7 @@ export class Client {
     /**
      * @return Ok
      */
-    generateWriteOff(body: WriteOffRouteParams): Promise<any> {
+    generateWriteOff(body: WriteOffRouteParams): Promise<FileResponse> {
         let url_ = this.baseUrl + "/write-off";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -32,7 +32,7 @@ export class Client {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Accept": "application/json"
+                "Accept": "application/pdf+tex"
             }
         };
 
@@ -41,17 +41,20 @@ export class Client {
         });
     }
 
-    protected processGenerateWriteOff(response: Response): Promise<any> {
+    protected processGenerateWriteOff(response: Response): Promise<FileResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-                result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
-            return result200;
-            });
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
         } else if (status === 422) {
             return response.text().then((_responseText) => {
             let result422: any = null;
@@ -71,7 +74,7 @@ export class Client {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<any>(null as any);
+        return Promise.resolve<FileResponse>(null as any);
     }
 
     /**

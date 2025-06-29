@@ -1,11 +1,11 @@
 var H = Object.defineProperty;
-var q = (c, e, t) => e in c ? H(c, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : c[e] = t;
-var s = (c, e, t) => (q(c, typeof e != "symbol" ? e + "" : e, t), t);
+var M = (c, e, t) => e in c ? H(c, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : c[e] = t;
+var r = (c, e, t) => (M(c, typeof e != "symbol" ? e + "" : e, t), t);
 class d {
   constructor(e, t) {
-    s(this, "http");
-    s(this, "baseUrl");
-    s(this, "jsonParseReviver");
+    r(this, "http");
+    r(this, "baseUrl");
+    r(this, "jsonParseReviver");
     this.http = t || window, this.baseUrl = e ?? "/pdf";
   }
   /**
@@ -19,24 +19,33 @@ class d {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json"
+        Accept: "application/pdf+tex"
       }
     };
-    return this.http.fetch(t, i).then((r) => this.processGenerateWriteOff(r));
+    return this.http.fetch(t, i).then((s) => this.processGenerateWriteOff(s));
   }
   processGenerateWriteOff(e) {
     const t = e.status;
     let o = {};
-    return e.headers && e.headers.forEach && e.headers.forEach((i, r) => o[r] = i), t === 200 ? e.text().then((i) => {
-      let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-      return r = n !== void 0 ? n : null, r;
-    }) : t === 422 ? e.text().then((i) => {
-      let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-      return r = g.fromJS(n), u("Validation Failed", t, i, o, r);
-    }) : t === 500 ? e.text().then((i) => {
-      let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-      return r = J.fromJS(n), u("Internal Server Error", t, i, o, r);
-    }) : t !== 200 && t !== 204 ? e.text().then((i) => u("An unexpected server error occurred.", t, i, o)) : Promise.resolve(null);
+    if (e.headers && e.headers.forEach && e.headers.forEach((i, s) => o[s] = i), t === 200 || t === 206) {
+      const i = e.headers ? e.headers.get("content-disposition") : void 0;
+      let s = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = s && s.length > 1 ? s[3] || s[2] : void 0;
+      return n ? n = decodeURIComponent(n) : (s = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = s && s.length > 1 ? s[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
+    } else {
+      if (t === 422)
+        return e.text().then((i) => {
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = g.fromJS(n), u("Validation Failed", t, i, o, s);
+        });
+      if (t === 500)
+        return e.text().then((i) => {
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = J.fromJS(n), u("Internal Server Error", t, i, o, s);
+        });
+      if (t !== 200 && t !== 204)
+        return e.text().then((i) => u("An unexpected server error occurred.", t, i, o));
+    }
+    return Promise.resolve(null);
   }
   /**
    * @return Ok
@@ -52,25 +61,25 @@ class d {
         Accept: "application/pdf+tex"
       }
     };
-    return this.http.fetch(t, i).then((r) => this.processGenerateFineReport(r));
+    return this.http.fetch(t, i).then((s) => this.processGenerateFineReport(s));
   }
   processGenerateFineReport(e) {
     const t = e.status;
     let o = {};
-    if (e.headers && e.headers.forEach && e.headers.forEach((i, r) => o[r] = i), t === 200 || t === 206) {
+    if (e.headers && e.headers.forEach && e.headers.forEach((i, s) => o[s] = i), t === 200 || t === 206) {
       const i = e.headers ? e.headers.get("content-disposition") : void 0;
-      let r = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
-      return n ? n = decodeURIComponent(n) : (r = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
+      let s = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = s && s.length > 1 ? s[3] || s[2] : void 0;
+      return n ? n = decodeURIComponent(n) : (s = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = s && s.length > 1 ? s[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
     } else {
       if (t === 422)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = g.fromJS(n), u("Validation Failed", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = g.fromJS(n), u("Validation Failed", t, i, o, s);
         });
       if (t === 500)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = J.fromJS(n), u("Internal Server Error", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = J.fromJS(n), u("Internal Server Error", t, i, o, s);
         });
       if (t !== 200 && t !== 204)
         return e.text().then((i) => u("An unexpected server error occurred.", t, i, o));
@@ -91,25 +100,25 @@ class d {
         Accept: "application/pdf+tex"
       }
     };
-    return this.http.fetch(t, i).then((r) => this.processGenerateUserReport(r));
+    return this.http.fetch(t, i).then((s) => this.processGenerateUserReport(s));
   }
   processGenerateUserReport(e) {
     const t = e.status;
     let o = {};
-    if (e.headers && e.headers.forEach && e.headers.forEach((i, r) => o[r] = i), t === 200 || t === 206) {
+    if (e.headers && e.headers.forEach && e.headers.forEach((i, s) => o[s] = i), t === 200 || t === 206) {
       const i = e.headers ? e.headers.get("content-disposition") : void 0;
-      let r = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
-      return n ? n = decodeURIComponent(n) : (r = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
+      let s = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = s && s.length > 1 ? s[3] || s[2] : void 0;
+      return n ? n = decodeURIComponent(n) : (s = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = s && s.length > 1 ? s[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
     } else {
       if (t === 422)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = g.fromJS(n), u("Validation Failed", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = g.fromJS(n), u("Validation Failed", t, i, o, s);
         });
       if (t === 500)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = J.fromJS(n), u("Internal Server Error", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = J.fromJS(n), u("Internal Server Error", t, i, o, s);
         });
       if (t !== 200 && t !== 204)
         return e.text().then((i) => u("An unexpected server error occurred.", t, i, o));
@@ -130,25 +139,25 @@ class d {
         Accept: "application/pdf+tex"
       }
     };
-    return this.http.fetch(t, i).then((r) => this.processGeneratePayout(r));
+    return this.http.fetch(t, i).then((s) => this.processGeneratePayout(s));
   }
   processGeneratePayout(e) {
     const t = e.status;
     let o = {};
-    if (e.headers && e.headers.forEach && e.headers.forEach((i, r) => o[r] = i), t === 200 || t === 206) {
+    if (e.headers && e.headers.forEach && e.headers.forEach((i, s) => o[s] = i), t === 200 || t === 206) {
       const i = e.headers ? e.headers.get("content-disposition") : void 0;
-      let r = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
-      return n ? n = decodeURIComponent(n) : (r = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
+      let s = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = s && s.length > 1 ? s[3] || s[2] : void 0;
+      return n ? n = decodeURIComponent(n) : (s = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = s && s.length > 1 ? s[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
     } else {
       if (t === 422)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = g.fromJS(n), u("Validation Failed", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = g.fromJS(n), u("Validation Failed", t, i, o, s);
         });
       if (t === 500)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = J.fromJS(n), u("Internal Server Error", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = J.fromJS(n), u("Internal Server Error", t, i, o, s);
         });
       if (t !== 200 && t !== 204)
         return e.text().then((i) => u("An unexpected server error occurred.", t, i, o));
@@ -169,25 +178,25 @@ class d {
         Accept: "application/pdf+tex"
       }
     };
-    return this.http.fetch(t, i).then((r) => this.processGenerateDisbursement(r));
+    return this.http.fetch(t, i).then((s) => this.processGenerateDisbursement(s));
   }
   processGenerateDisbursement(e) {
     const t = e.status;
     let o = {};
-    if (e.headers && e.headers.forEach && e.headers.forEach((i, r) => o[r] = i), t === 200 || t === 206) {
+    if (e.headers && e.headers.forEach && e.headers.forEach((i, s) => o[s] = i), t === 200 || t === 206) {
       const i = e.headers ? e.headers.get("content-disposition") : void 0;
-      let r = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
-      return n ? n = decodeURIComponent(n) : (r = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
+      let s = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = s && s.length > 1 ? s[3] || s[2] : void 0;
+      return n ? n = decodeURIComponent(n) : (s = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = s && s.length > 1 ? s[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
     } else {
       if (t === 422)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = g.fromJS(n), u("Validation Failed", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = g.fromJS(n), u("Validation Failed", t, i, o, s);
         });
       if (t === 500)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = J.fromJS(n), u("Internal Server Error", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = J.fromJS(n), u("Internal Server Error", t, i, o, s);
         });
       if (t !== 200 && t !== 204)
         return e.text().then((i) => u("An unexpected server error occurred.", t, i, o));
@@ -202,7 +211,7 @@ class d {
     if (e == null)
       throw new Error("The parameter 'type' must be defined.");
     o = o.replace("{type}", encodeURIComponent("" + e)), o = o.replace(/[?&]$/, "");
-    let r = {
+    let s = {
       body: JSON.stringify(t),
       method: "POST",
       headers: {
@@ -210,25 +219,25 @@ class d {
         Accept: "application/pdf+tex"
       }
     };
-    return this.http.fetch(o, r).then((n) => this.processGenerateContract(n));
+    return this.http.fetch(o, s).then((n) => this.processGenerateContract(n));
   }
   processGenerateContract(e) {
     const t = e.status;
     let o = {};
-    if (e.headers && e.headers.forEach && e.headers.forEach((i, r) => o[r] = i), t === 200 || t === 206) {
+    if (e.headers && e.headers.forEach && e.headers.forEach((i, s) => o[s] = i), t === 200 || t === 206) {
       const i = e.headers ? e.headers.get("content-disposition") : void 0;
-      let r = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
-      return n ? n = decodeURIComponent(n) : (r = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
+      let s = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = s && s.length > 1 ? s[3] || s[2] : void 0;
+      return n ? n = decodeURIComponent(n) : (s = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = s && s.length > 1 ? s[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
     } else {
       if (t === 422)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = g.fromJS(n), u("Validation Failed", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = g.fromJS(n), u("Validation Failed", t, i, o, s);
         });
       if (t === 500)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = J.fromJS(n), u("Internal Server Error", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = J.fromJS(n), u("Internal Server Error", t, i, o, s);
         });
       if (t !== 200 && t !== 204)
         return e.text().then((i) => u("An unexpected server error occurred.", t, i, o));
@@ -243,7 +252,7 @@ class d {
     if (e == null)
       throw new Error("The parameter 'type' must be defined.");
     o = o.replace("{type}", encodeURIComponent("" + e)), o = o.replace(/[?&]$/, "");
-    let r = {
+    let s = {
       body: JSON.stringify(t),
       method: "POST",
       headers: {
@@ -251,25 +260,25 @@ class d {
         Accept: "application/pdf+tex"
       }
     };
-    return this.http.fetch(o, r).then((n) => this.processGenerateInvoice(n));
+    return this.http.fetch(o, s).then((n) => this.processGenerateInvoice(n));
   }
   processGenerateInvoice(e) {
     const t = e.status;
     let o = {};
-    if (e.headers && e.headers.forEach && e.headers.forEach((i, r) => o[r] = i), t === 200 || t === 206) {
+    if (e.headers && e.headers.forEach && e.headers.forEach((i, s) => o[s] = i), t === 200 || t === 206) {
       const i = e.headers ? e.headers.get("content-disposition") : void 0;
-      let r = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = r && r.length > 1 ? r[3] || r[2] : void 0;
-      return n ? n = decodeURIComponent(n) : (r = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = r && r.length > 1 ? r[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
+      let s = i ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(i) : void 0, n = s && s.length > 1 ? s[3] || s[2] : void 0;
+      return n ? n = decodeURIComponent(n) : (s = i ? /filename="?([^"]*?)"?(;|$)/g.exec(i) : void 0, n = s && s.length > 1 ? s[1] : void 0), e.blob().then((m) => ({ fileName: n, data: m, status: t, headers: o }));
     } else {
       if (t === 422)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = g.fromJS(n), u("Validation Failed", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = g.fromJS(n), u("Validation Failed", t, i, o, s);
         });
       if (t === 500)
         return e.text().then((i) => {
-          let r = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
-          return r = J.fromJS(n), u("Internal Server Error", t, i, o, r);
+          let s = null, n = i === "" ? null : JSON.parse(i, this.jsonParseReviver);
+          return s = J.fromJS(n), u("Internal Server Error", t, i, o, s);
         });
       if (t !== 200 && t !== 204)
         return e.text().then((i) => u("An unexpected server error occurred.", t, i, o));
@@ -279,8 +288,8 @@ class d {
 }
 class g {
   constructor(e) {
-    s(this, "message");
-    s(this, "details");
+    r(this, "message");
+    r(this, "details");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -309,7 +318,7 @@ class g {
 }
 class J {
   constructor(e) {
-    s(this, "message");
+    r(this, "message");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -328,11 +337,11 @@ class J {
 }
 class y {
   constructor(e) {
-    s(this, "name");
-    s(this, "amount");
-    s(this, "reference");
-    s(this, "date");
-    s(this, "debtorNumber");
+    r(this, "name");
+    r(this, "amount");
+    r(this, "reference");
+    r(this, "date");
+    r(this, "debtorNumber");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -351,7 +360,7 @@ class y {
 }
 class O {
   constructor(e) {
-    s(this, "writeOff");
+    r(this, "writeOff");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -369,14 +378,14 @@ class O {
     return e = typeof e == "object" ? e : {}, e.writeOff = this.writeOff ? this.writeOff.toJSON() : void 0, e;
   }
 }
-var M = /* @__PURE__ */ ((c) => (c.DUTCH = "DUTCH", c.ENGLISH = "ENGLISH", c))(M || {}), W = /* @__PURE__ */ ((c) => (c.PDF = "PDF", c.TEX = "TEX", c))(W || {});
+var q = /* @__PURE__ */ ((c) => (c.DUTCH = "DUTCH", c.ENGLISH = "ENGLISH", c))(q || {}), W = /* @__PURE__ */ ((c) => (c.PDF = "PDF", c.TEX = "TEX", c))(W || {});
 class f {
   constructor(e) {
-    s(this, "name");
-    s(this, "language");
-    s(this, "fileType");
-    s(this, "stationery");
-    s(this, "createdAt");
+    r(this, "name");
+    r(this, "language");
+    r(this, "fileType");
+    r(this, "stationery");
+    r(this, "createdAt");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -395,8 +404,8 @@ class f {
 }
 class x {
   constructor(e) {
-    s(this, "params");
-    s(this, "settings");
+    r(this, "params");
+    r(this, "settings");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -417,11 +426,11 @@ class x {
 var L = /* @__PURE__ */ ((c) => (c.ZERO = "ZERO", c.LOW = "LOW", c.HIGH = "HIGH", c))(L || {});
 class N {
   constructor(e) {
-    s(this, "basePrice");
-    s(this, "discount");
-    s(this, "vatAmount");
-    s(this, "vatCategory");
-    s(this, "quantity");
+    r(this, "basePrice");
+    r(this, "discount");
+    r(this, "vatAmount");
+    r(this, "vatCategory");
+    r(this, "quantity");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -440,11 +449,11 @@ class N {
 }
 class w {
   constructor(e) {
-    s(this, "name");
-    s(this, "details");
-    s(this, "summary");
-    s(this, "specification");
-    s(this, "pricing");
+    r(this, "name");
+    r(this, "details");
+    r(this, "summary");
+    r(this, "specification");
+    r(this, "pricing");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -464,10 +473,10 @@ class w {
 }
 class l {
   constructor(e) {
-    s(this, "exclVat");
-    s(this, "lowVat");
-    s(this, "highVat");
-    s(this, "inclVat");
+    r(this, "exclVat");
+    r(this, "lowVat");
+    r(this, "highVat");
+    r(this, "inclVat");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -486,10 +495,10 @@ class l {
 }
 class b {
   constructor(e) {
-    s(this, "startDate");
-    s(this, "endDate");
-    s(this, "fines");
-    s(this, "total");
+    r(this, "startDate");
+    r(this, "endDate");
+    r(this, "fines");
+    r(this, "total");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -521,8 +530,8 @@ class b {
 }
 class V {
   constructor(e) {
-    s(this, "params");
-    s(this, "settings");
+    r(this, "params");
+    r(this, "settings");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -542,11 +551,11 @@ class V {
 }
 class h {
   constructor(e) {
-    s(this, "firstName");
-    s(this, "lastNamePreposition");
-    s(this, "lastName");
-    s(this, "fullName");
-    s(this, "function");
+    r(this, "firstName");
+    r(this, "lastNamePreposition");
+    r(this, "lastName");
+    r(this, "fullName");
+    r(this, "function");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -565,13 +574,13 @@ class h {
 }
 class D {
   constructor(e) {
-    s(this, "startDate");
-    s(this, "endDate");
-    s(this, "entries");
-    s(this, "total");
-    s(this, "description");
-    s(this, "account");
-    s(this, "type");
+    r(this, "startDate");
+    r(this, "endDate");
+    r(this, "entries");
+    r(this, "total");
+    r(this, "description");
+    r(this, "account");
+    r(this, "type");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -603,8 +612,8 @@ class D {
 }
 class U {
   constructor(e) {
-    s(this, "params");
-    s(this, "settings");
+    r(this, "params");
+    r(this, "settings");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -624,12 +633,12 @@ class U {
 }
 class j {
   constructor(e) {
-    s(this, "bankAccountName");
-    s(this, "bankAccountNumber");
-    s(this, "amount");
-    s(this, "reference");
-    s(this, "date");
-    s(this, "debtorNumber");
+    r(this, "bankAccountName");
+    r(this, "bankAccountNumber");
+    r(this, "amount");
+    r(this, "reference");
+    r(this, "date");
+    r(this, "debtorNumber");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -648,7 +657,7 @@ class j {
 }
 class P {
   constructor(e) {
-    s(this, "payout");
+    r(this, "payout");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -668,8 +677,8 @@ class P {
 }
 class G {
   constructor(e) {
-    s(this, "params");
-    s(this, "settings");
+    r(this, "params");
+    r(this, "settings");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -689,14 +698,14 @@ class G {
 }
 class A {
   constructor(e) {
-    s(this, "startDate");
-    s(this, "endDate");
-    s(this, "entries");
-    s(this, "total");
-    s(this, "description");
-    s(this, "reference");
-    s(this, "debtorId");
-    s(this, "account");
+    r(this, "startDate");
+    r(this, "endDate");
+    r(this, "entries");
+    r(this, "total");
+    r(this, "description");
+    r(this, "reference");
+    r(this, "debtorId");
+    r(this, "account");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -728,8 +737,8 @@ class A {
 }
 class k {
   constructor(e) {
-    s(this, "params");
-    s(this, "settings");
+    r(this, "params");
+    r(this, "settings");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -750,11 +759,11 @@ class k {
 var X = /* @__PURE__ */ ((c) => (c.Contract = "contract", c.Quote = "quote", c))(X || {});
 class S {
   constructor(e) {
-    s(this, "date");
-    s(this, "dueDate");
-    s(this, "dueDays");
-    s(this, "startDate");
-    s(this, "endDate");
+    r(this, "date");
+    r(this, "dueDate");
+    r(this, "dueDays");
+    r(this, "startDate");
+    r(this, "endDate");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -773,8 +782,8 @@ class S {
 }
 class p {
   constructor(e) {
-    s(this, "name");
-    s(this, "id");
+    r(this, "name");
+    r(this, "id");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -793,10 +802,10 @@ class p {
 }
 class v {
   constructor(e) {
-    s(this, "street");
-    s(this, "postalCode");
-    s(this, "city");
-    s(this, "country");
+    r(this, "street");
+    r(this, "postalCode");
+    r(this, "city");
+    r(this, "country");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -815,8 +824,8 @@ class v {
 }
 class C {
   constructor(e) {
-    s(this, "ourReference");
-    s(this, "yourReference");
+    r(this, "ourReference");
+    r(this, "yourReference");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -835,17 +844,17 @@ class C {
 }
 class R {
   constructor(e) {
-    s(this, "subject");
-    s(this, "sender");
-    s(this, "recipient");
-    s(this, "dates");
-    s(this, "company");
-    s(this, "address");
-    s(this, "reference");
-    s(this, "products");
-    s(this, "pricing");
-    s(this, "firstSignee");
-    s(this, "secondSignee");
+    r(this, "subject");
+    r(this, "sender");
+    r(this, "recipient");
+    r(this, "dates");
+    r(this, "company");
+    r(this, "address");
+    r(this, "reference");
+    r(this, "products");
+    r(this, "pricing");
+    r(this, "firstSignee");
+    r(this, "secondSignee");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -877,8 +886,8 @@ class R {
 }
 class $ {
   constructor(e) {
-    s(this, "params");
-    s(this, "settings");
+    r(this, "params");
+    r(this, "settings");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -899,9 +908,9 @@ class $ {
 var Z = /* @__PURE__ */ ((c) => (c.Invoice = "invoice", c.Weeklysales = "weeklysales", c.Creditnota = "creditnota", c))(Z || {});
 class E {
   constructor(e) {
-    s(this, "ourReference");
-    s(this, "yourReference");
-    s(this, "costCenter");
+    r(this, "ourReference");
+    r(this, "yourReference");
+    r(this, "costCenter");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -920,14 +929,14 @@ class E {
 }
 class F {
   constructor(e) {
-    s(this, "products");
-    s(this, "pricing");
-    s(this, "subject");
-    s(this, "sender");
-    s(this, "recipient");
-    s(this, "dates");
-    s(this, "company");
-    s(this, "address");
+    r(this, "products");
+    r(this, "pricing");
+    r(this, "subject");
+    r(this, "sender");
+    r(this, "recipient");
+    r(this, "dates");
+    r(this, "company");
+    r(this, "address");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -964,17 +973,17 @@ class F {
 }
 class I {
   constructor(e) {
-    s(this, "products");
-    s(this, "pricing");
-    s(this, "subject");
-    s(this, "sender");
-    s(this, "recipient");
-    s(this, "dates");
-    s(this, "company");
-    s(this, "address");
-    s(this, "summarizedProducts");
-    s(this, "reference");
-    s(this, "description");
+    r(this, "products");
+    r(this, "pricing");
+    r(this, "subject");
+    r(this, "sender");
+    r(this, "recipient");
+    r(this, "dates");
+    r(this, "company");
+    r(this, "address");
+    r(this, "summarizedProducts");
+    r(this, "reference");
+    r(this, "description");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -1016,8 +1025,8 @@ class I {
 }
 class z {
   constructor(e) {
-    s(this, "params");
-    s(this, "settings");
+    r(this, "params");
+    r(this, "settings");
     if (e)
       for (var t in e)
         e.hasOwnProperty(t) && (this[t] = e[t]);
@@ -1037,15 +1046,15 @@ class z {
 }
 var Q = /* @__PURE__ */ ((c) => (c.Validation_failed = "Validation failed", c))(Q || {}), B = /* @__PURE__ */ ((c) => (c.Internal_Server_Error = "Internal Server Error", c))(B || {}), K = /* @__PURE__ */ ((c) => (c.Sales = "sales", c.Purchases = "purchases", c))(K || {});
 class Y extends Error {
-  constructor(t, o, i, r, n) {
+  constructor(t, o, i, s, n) {
     super();
-    s(this, "message");
-    s(this, "status");
-    s(this, "response");
-    s(this, "headers");
-    s(this, "result");
-    s(this, "isApiException", !0);
-    this.message = t, this.status = o, this.response = i, this.headers = r, this.result = n;
+    r(this, "message");
+    r(this, "status");
+    r(this, "response");
+    r(this, "headers");
+    r(this, "result");
+    r(this, "isApiException", !0);
+    this.message = t, this.status = o, this.response = i, this.headers = s, this.result = n;
   }
   static isApiException(t) {
     return t.isApiException === !0;
@@ -1073,7 +1082,7 @@ export {
   E as InvoiceReferences,
   z as InvoiceRouteParams,
   Z as InvoiceType,
-  M as Language,
+  q as Language,
   j as Payout,
   P as PayoutParameters,
   G as PayoutRouteParams,

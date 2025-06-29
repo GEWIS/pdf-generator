@@ -807,7 +807,7 @@
 					"200": {
 						"description": "Ok",
 						"content": {
-							"application/json": {
+							"application/pdf+tex": {
 								"schema": {}
 							}
 						}
@@ -815,7 +815,7 @@
 					"422": {
 						"description": "Validation Failed",
 						"content": {
-							"application/json": {
+							"application/pdf+tex": {
 								"schema": {
 									"$ref": "#/components/schemas/ValidateErrorJSON"
 								}
@@ -825,7 +825,7 @@
 					"500": {
 						"description": "Internal Server Error",
 						"content": {
-							"application/json": {
+							"application/pdf+tex": {
 								"schema": {
 									"$ref": "#/components/schemas/InternalError"
 								}

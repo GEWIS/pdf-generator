@@ -8,8 +8,8 @@ export declare class Client {
     /**
      * @return Ok
      */
-    generateWriteOff(body: WriteOffRouteParams): Promise<any>;
-    protected processGenerateWriteOff(response: Response): Promise<any>;
+    generateWriteOff(body: WriteOffRouteParams): Promise<FileResponse>;
+    protected processGenerateWriteOff(response: Response): Promise<FileResponse>;
     /**
      * @return Ok
      */
