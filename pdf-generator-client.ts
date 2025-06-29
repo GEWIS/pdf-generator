@@ -21,6 +21,62 @@ export class Client {
     /**
      * @return Ok
      */
+    generateWriteOff(body: WriteOffRouteParams): Promise<any> {
+        let url_ = this.baseUrl + "/write-off";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGenerateWriteOff(_response);
+        });
+    }
+
+    protected processGenerateWriteOff(response: Response): Promise<any> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return result200;
+            });
+        } else if (status === 422) {
+            return response.text().then((_responseText) => {
+            let result422: any = null;
+            let resultData422 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result422 = ValidateErrorJSON.fromJS(resultData422);
+            return throwException("Validation Failed", status, _responseText, _headers, result422);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = InternalError.fromJS(resultData500);
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<any>(null as any);
+    }
+
+    /**
+     * @return Ok
+     */
     generateFineReport(body: FineRouteParams): Promise<FileResponse> {
         let url_ = this.baseUrl + "/report/fines";
         url_ = url_.replace(/[?&]$/, "");
@@ -470,6 +526,203 @@ export interface IInternalError {
     message: InternalErrorMessage;
 }
 
+export class WriteOff implements IWriteOff {
+    name!: string;
+    amount!: number;
+    reference!: string;
+    date!: Date;
+    debtorNumber!: string;
+
+    constructor(data?: IWriteOff) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.amount = _data["amount"];
+            this.reference = _data["reference"];
+            this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>undefined;
+            this.debtorNumber = _data["debtorNumber"];
+        }
+    }
+
+    static fromJS(data: any): WriteOff {
+        data = typeof data === 'object' ? data : {};
+        let result = new WriteOff();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["amount"] = this.amount;
+        data["reference"] = this.reference;
+        data["date"] = this.date ? this.date.toISOString() : <any>undefined;
+        data["debtorNumber"] = this.debtorNumber;
+        return data;
+    }
+}
+
+export interface IWriteOff {
+    name: string;
+    amount: number;
+    reference: string;
+    date: Date;
+    debtorNumber: string;
+}
+
+export class WriteOffParameters implements IWriteOffParameters {
+    writeOff!: WriteOff;
+
+    constructor(data?: IWriteOffParameters) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.writeOff = new WriteOff();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.writeOff = _data["writeOff"] ? WriteOff.fromJS(_data["writeOff"]) : new WriteOff();
+        }
+    }
+
+    static fromJS(data: any): WriteOffParameters {
+        data = typeof data === 'object' ? data : {};
+        let result = new WriteOffParameters();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["writeOff"] = this.writeOff ? this.writeOff.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IWriteOffParameters {
+    writeOff: WriteOff;
+}
+
+export enum Language {
+    DUTCH = "DUTCH",
+    ENGLISH = "ENGLISH",
+}
+
+export enum ReturnFileType {
+    PDF = "PDF",
+    TEX = "TEX",
+}
+
+export class FileSettings implements IFileSettings {
+    name!: string;
+    language!: Language;
+    fileType!: ReturnFileType;
+    stationery?: string;
+    createdAt!: Date;
+
+    constructor(data?: IFileSettings) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.language = _data["language"];
+            this.fileType = _data["fileType"];
+            this.stationery = _data["stationery"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): FileSettings {
+        data = typeof data === 'object' ? data : {};
+        let result = new FileSettings();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["language"] = this.language;
+        data["fileType"] = this.fileType;
+        data["stationery"] = this.stationery;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IFileSettings {
+    name: string;
+    language: Language;
+    fileType: ReturnFileType;
+    stationery?: string;
+    createdAt: Date;
+}
+
+export class WriteOffRouteParams implements IWriteOffRouteParams {
+    params!: WriteOffParameters;
+    settings!: FileSettings;
+
+    constructor(data?: IWriteOffRouteParams) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.params = new WriteOffParameters();
+            this.settings = new FileSettings();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.params = _data["params"] ? WriteOffParameters.fromJS(_data["params"]) : new WriteOffParameters();
+            this.settings = _data["settings"] ? FileSettings.fromJS(_data["settings"]) : new FileSettings();
+        }
+    }
+
+    static fromJS(data: any): WriteOffRouteParams {
+        data = typeof data === 'object' ? data : {};
+        let result = new WriteOffRouteParams();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["params"] = this.params ? this.params.toJSON() : <any>undefined;
+        data["settings"] = this.settings ? this.settings.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IWriteOffRouteParams {
+    params: WriteOffParameters;
+    settings: FileSettings;
+}
+
 export enum VAT {
     ZERO = "ZERO",
     LOW = "LOW",
@@ -689,68 +942,6 @@ export interface IFineReportParameters {
     endDate: Date;
     fines: Product[];
     total: TotalPricing;
-}
-
-export enum Language {
-    DUTCH = "DUTCH",
-    ENGLISH = "ENGLISH",
-}
-
-export enum ReturnFileType {
-    PDF = "PDF",
-    TEX = "TEX",
-}
-
-export class FileSettings implements IFileSettings {
-    name!: string;
-    language!: Language;
-    fileType!: ReturnFileType;
-    stationery?: string;
-    createdAt!: Date;
-
-    constructor(data?: IFileSettings) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.name = _data["name"];
-            this.language = _data["language"];
-            this.fileType = _data["fileType"];
-            this.stationery = _data["stationery"];
-            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): FileSettings {
-        data = typeof data === 'object' ? data : {};
-        let result = new FileSettings();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["name"] = this.name;
-        data["language"] = this.language;
-        data["fileType"] = this.fileType;
-        data["stationery"] = this.stationery;
-        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
-        return data;
-    }
-}
-
-export interface IFileSettings {
-    name: string;
-    language: Language;
-    fileType: ReturnFileType;
-    stationery?: string;
-    createdAt: Date;
 }
 
 export class FineRouteParams implements IFineRouteParams {

@@ -2,7 +2,8 @@ import { Body, Controller, Post, Produces, Response, Route, SuccessResponse, Tag
 import { FileSettings, prepareFileResponse } from '../helpers/fileManager';
 import { ApiError, HTTPStatus, InternalError, ValidateErrorJSON } from '../helpers/customError';
 import ReportService, {
-  FineReportParameters, UserReportParameters
+  FineReportParameters,
+  UserReportParameters
 } from '../services/reportService';
 
 export interface FineRouteParams {
@@ -21,17 +22,15 @@ export interface UserRouteParams {
 export class ReportController extends Controller {
   /**
    * Generates a fine report as Tex or PDF file.
-  */
+   */
   @Post('fines')
   @Response<ValidateErrorJSON>(422, 'Validation Failed')
   @Response<InternalError>(500, 'Internal Server Error')
   @SuccessResponse(200, 'Ok')
-  public async generateFineReport(
-    @Body() params: FineRouteParams
-  ): Promise<any> {
+  public async generateFineReport(@Body() params: FineRouteParams): Promise<any> {
     let fileName: string = await new ReportService().generateFineReport(
       params.settings,
-      params.params,
+      params.params
     );
     if (fileName === undefined)
       throw new ApiError(
@@ -48,12 +47,10 @@ export class ReportController extends Controller {
   @Response<ValidateErrorJSON>(422, 'Validation Failed')
   @Response<InternalError>(500, 'Internal Server Error')
   @SuccessResponse(200, 'Ok')
-  public async generateUserReport(
-    @Body() params: UserRouteParams
-  ): Promise<any> {
+  public async generateUserReport(@Body() params: UserRouteParams): Promise<any> {
     let fileName: string = await new ReportService().generateUserReport(
       params.settings,
-      params.params,
+      params.params
     );
     if (fileName === undefined)
       throw new ApiError(

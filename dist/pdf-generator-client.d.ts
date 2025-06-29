@@ -8,6 +8,11 @@ export declare class Client {
     /**
      * @return Ok
      */
+    generateWriteOff(body: WriteOffRouteParams): Promise<any>;
+    protected processGenerateWriteOff(response: Response): Promise<any>;
+    /**
+     * @return Ok
+     */
     generateFineReport(body: FineRouteParams): Promise<FileResponse>;
     protected processGenerateFineReport(response: Response): Promise<FileResponse>;
     /**
@@ -61,6 +66,72 @@ export declare class InternalError implements IInternalError {
 }
 export interface IInternalError {
     message: InternalErrorMessage;
+}
+export declare class WriteOff implements IWriteOff {
+    name: string;
+    amount: number;
+    reference: string;
+    date: Date;
+    debtorNumber: string;
+    constructor(data?: IWriteOff);
+    init(_data?: any): void;
+    static fromJS(data: any): WriteOff;
+    toJSON(data?: any): any;
+}
+export interface IWriteOff {
+    name: string;
+    amount: number;
+    reference: string;
+    date: Date;
+    debtorNumber: string;
+}
+export declare class WriteOffParameters implements IWriteOffParameters {
+    writeOff: WriteOff;
+    constructor(data?: IWriteOffParameters);
+    init(_data?: any): void;
+    static fromJS(data: any): WriteOffParameters;
+    toJSON(data?: any): any;
+}
+export interface IWriteOffParameters {
+    writeOff: WriteOff;
+}
+export declare enum Language {
+    DUTCH = "DUTCH",
+    ENGLISH = "ENGLISH"
+}
+export declare enum ReturnFileType {
+    PDF = "PDF",
+    TEX = "TEX"
+}
+export declare class FileSettings implements IFileSettings {
+    name: string;
+    language: Language;
+    fileType: ReturnFileType;
+    stationery?: string;
+    createdAt: Date;
+    constructor(data?: IFileSettings);
+    init(_data?: any): void;
+    static fromJS(data: any): FileSettings;
+    toJSON(data?: any): any;
+}
+export interface IFileSettings {
+    name: string;
+    language: Language;
+    fileType: ReturnFileType;
+    stationery?: string;
+    createdAt: Date;
+}
+export declare class WriteOffRouteParams implements IWriteOffRouteParams {
+    params: WriteOffParameters;
+    settings: FileSettings;
+    constructor(data?: IWriteOffRouteParams);
+    init(_data?: any): void;
+    static fromJS(data: any): WriteOffRouteParams;
+    toJSON(data?: any): any;
+}
+export interface IWriteOffRouteParams {
+    params: WriteOffParameters;
+    settings: FileSettings;
 }
 export declare enum VAT {
     ZERO = "ZERO",
@@ -134,32 +205,6 @@ export interface IFineReportParameters {
     endDate: Date;
     fines: Product[];
     total: TotalPricing;
-}
-export declare enum Language {
-    DUTCH = "DUTCH",
-    ENGLISH = "ENGLISH"
-}
-export declare enum ReturnFileType {
-    PDF = "PDF",
-    TEX = "TEX"
-}
-export declare class FileSettings implements IFileSettings {
-    name: string;
-    language: Language;
-    fileType: ReturnFileType;
-    stationery?: string;
-    createdAt: Date;
-    constructor(data?: IFileSettings);
-    init(_data?: any): void;
-    static fromJS(data: any): FileSettings;
-    toJSON(data?: any): any;
-}
-export interface IFileSettings {
-    name: string;
-    language: Language;
-    fileType: ReturnFileType;
-    stationery?: string;
-    createdAt: Date;
 }
 export declare class FineRouteParams implements IFineRouteParams {
     params: FineReportParameters;
