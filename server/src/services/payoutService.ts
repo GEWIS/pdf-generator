@@ -70,16 +70,11 @@ export default class PayoutService {
    */
   public async generatePayout(
     settings: FileSettings,
-    parameters: PayoutParameters,
+    parameters: PayoutParameters
   ): Promise<string> {
     // Read template file
     let fileBuffer: Buffer | void = await asyncFileSystem
-      .readFile(
-        path.join(
-          this.templateDir,
-          this.payoutName
-        )
-      )
+      .readFile(path.join(this.templateDir, this.payoutName))
       .catch((e: Error): void => {
         throw new ApiError(
           HTTPStatus.InternalServerError,
@@ -88,14 +83,17 @@ export default class PayoutService {
       });
     let payout: string = fileBuffer!.toString();
 
-    payout = replaceAll(payout,  '{{IBAN}}', parameters.payout.bankAccountNumber);
-    payout = replaceAll(payout,  '{{ourreference}}', parameters.payout.reference);
-    payout = replaceAll(payout,  '{{debtornumber}}', parameters.payout.debtorNumber);
-    payout = replaceAll(payout,  '{{dateday}}', parameters.payout.date.getDate().toString());
-    payout = replaceAll(payout,  '{{datemonth}}', (parameters.payout.date.getMonth() + 1).toString());
-    payout = replaceAll(payout,  '{{dateyear}}', parameters.payout.date.getFullYear().toString());
+    payout = replaceAll(payout, '{{IBAN}}', parameters.payout.bankAccountNumber);
+    payout = replaceAll(payout, '{{ourreference}}', parameters.payout.reference);
+    payout = replaceAll(payout, '{{debtornumber}}', parameters.payout.debtorNumber);
+    payout = replaceAll(payout, '{{dateday}}', parameters.payout.date.getDate().toString());
+    payout = replaceAll(
+      payout,
+      '{{datemonth}}',
+      (parameters.payout.date.getMonth() + 1).toString()
+    );
+    payout = replaceAll(payout, '{{dateyear}}', parameters.payout.date.getFullYear().toString());
     payout = createPayoutEntry(payout, parameters.payout);
-
 
     return finishFileGeneration(
       payout,
@@ -107,16 +105,11 @@ export default class PayoutService {
 
   public async generateDisbursement(
     settings: FileSettings,
-    parameters: SellerPayoutParameters,
+    parameters: SellerPayoutParameters
   ): Promise<string> {
     // Read template file
     let fileBuffer: Buffer | void = await asyncFileSystem
-      .readFile(
-        path.join(
-          this.templateDir,
-          this.disbursementName
-        )
-      )
+      .readFile(path.join(this.templateDir, this.disbursementName))
       .catch((e: Error): void => {
         throw new ApiError(
           HTTPStatus.InternalServerError,
@@ -125,30 +118,42 @@ export default class PayoutService {
       });
     let payout: string = fileBuffer!.toString();
 
-    payout = replaceAllSafe(payout,  '{{company}}', parameters.account.firstName);
-    payout = replaceAll(payout,  '{{description}}', parameters.description);
-    payout = replaceAll(payout,  '{{ourreference}}', parameters.reference);
-    payout = replaceAll(payout,  '{{debtornumber}}', parameters.debtorId.toString());
+    payout = replaceAllSafe(payout, '{{company}}', parameters.account.firstName);
+    payout = replaceAll(payout, '{{description}}', parameters.description);
+    payout = replaceAll(payout, '{{ourreference}}', parameters.reference);
+    payout = replaceAll(payout, '{{debtornumber}}', parameters.debtorId.toString());
     const safeUserName: string = parameters.account.fullName.replace(/([&%$#_{}])/g, '\\$1');
-    payout = createSellerPayoutEntry(payout, parameters.total.inclVat,
-      safeUserName, parameters.reference);
+    payout = createSellerPayoutEntry(
+      payout,
+      parameters.total.inclVat,
+      safeUserName,
+      parameters.reference
+    );
 
-    payout = replaceAll(payout,  '{{dateday}}', parameters.startDate.getDate().toString());
-    payout = replaceAll(payout,  '{{datemonth}}', (parameters.startDate.getMonth() + 1).toString());
-    payout = replaceAll(payout,  '{{dateyear}}', parameters.startDate.getFullYear().toString());
+    payout = replaceAll(payout, '{{dateday}}', parameters.startDate.getDate().toString());
+    payout = replaceAll(payout, '{{datemonth}}', (parameters.startDate.getMonth() + 1).toString());
+    payout = replaceAll(payout, '{{dateyear}}', parameters.startDate.getFullYear().toString());
 
-    payout = replaceAll(payout,  '{{dueday}}', parameters.endDate.getDate().toString());
-    payout = replaceAll(payout,  '{{duemonth}}', (parameters.endDate.getMonth() + 1).toString());
-    payout = replaceAll(payout,  '{{dueyear}}', parameters.endDate.getFullYear().toString());
+    payout = replaceAll(payout, '{{dueday}}', parameters.endDate.getDate().toString());
+    payout = replaceAll(payout, '{{duemonth}}', (parameters.endDate.getMonth() + 1).toString());
+    payout = replaceAll(payout, '{{dueyear}}', parameters.endDate.getFullYear().toString());
 
-    payout = replaceAll(payout,  '{{inclvat}}', convertNumberToCurrency(parameters.total.inclVat));
-    payout = replaceAll(payout,  '{{exclvat}}', convertNumberToCurrency(parameters.total.exclVat));
-    payout = replaceAll(payout,  '{{vatlow}}', convertNumberToCurrency(parameters.total.lowVat));
-    payout = replaceAll(payout,  '{{vathigh}}', convertNumberToCurrency(parameters.total.highVat));
-    payout = replaceAll(payout,  '{{totalvat}}', convertNumberToCurrency(parameters.total.inclVat - parameters.total.exclVat));
+    payout = replaceAll(payout, '{{inclvat}}', convertNumberToCurrency(parameters.total.inclVat));
+    payout = replaceAll(payout, '{{exclvat}}', convertNumberToCurrency(parameters.total.exclVat));
+    payout = replaceAll(payout, '{{vatlow}}', convertNumberToCurrency(parameters.total.lowVat));
+    payout = replaceAll(payout, '{{vathigh}}', convertNumberToCurrency(parameters.total.highVat));
+    payout = replaceAll(
+      payout,
+      '{{totalvat}}',
+      convertNumberToCurrency(parameters.total.inclVat - parameters.total.exclVat)
+    );
 
-    payout = replaceAll(payout,  '{{periodstart}}', parameters.startDate.toISOString().substring(0, 10));
-    payout = replaceAll(payout,  '{{periodend}}', parameters.endDate.toISOString().substring(0, 10));
+    payout = replaceAll(
+      payout,
+      '{{periodstart}}',
+      parameters.startDate.toISOString().substring(0, 10)
+    );
+    payout = replaceAll(payout, '{{periodend}}', parameters.endDate.toISOString().substring(0, 10));
 
     payout = createPricingTable(payout, parameters.entries, parameters.total, 'sales');
 

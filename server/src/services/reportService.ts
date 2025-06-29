@@ -64,16 +64,11 @@ export default class ReportService {
    */
   public async generateFineReport(
     settings: FileSettings,
-    parameters: FineReportParameters,
+    parameters: FineReportParameters
   ): Promise<string> {
     // Read template file
     let fileBuffer: Buffer | void = await asyncFileSystem
-      .readFile(
-        path.join(
-          this.templateDir,
-          this.fineReportName
-        )
-      )
+      .readFile(path.join(this.templateDir, this.fineReportName))
       .catch((e: Error): void => {
         throw new ApiError(
           HTTPStatus.InternalServerError,
@@ -87,11 +82,7 @@ export default class ReportService {
       '{{periodstart}}',
       parameters.startDate.toLocaleDateString('nl-NL')
     );
-    report = replaceAll(
-      report,
-      '{{periodend}}',
-      parameters.endDate.toLocaleDateString('nl-NL')
-    );
+    report = replaceAll(report, '{{periodend}}', parameters.endDate.toLocaleDateString('nl-NL'));
 
     const { startDate, endDate } = parameters;
     report = replaceAll(report, '{{startdateday}}', startDate.getDate().toString());
@@ -119,16 +110,11 @@ export default class ReportService {
    */
   public async generateUserReport(
     settings: FileSettings,
-    parameters: UserReportParameters,
+    parameters: UserReportParameters
   ): Promise<string> {
     // Read template file
     let fileBuffer: Buffer | void = await asyncFileSystem
-      .readFile(
-        path.join(
-          this.templateDir,
-          this.userReportName
-        )
-      )
+      .readFile(path.join(this.templateDir, this.userReportName))
       .catch((e: Error): void => {
         throw new ApiError(
           HTTPStatus.InternalServerError,
@@ -142,11 +128,7 @@ export default class ReportService {
       '{{periodstart}}',
       parameters.startDate.toLocaleDateString('nl-NL')
     );
-    report = replaceAll(
-      report,
-      '{{periodend}}',
-      parameters.endDate.toLocaleDateString('nl-NL')
-    );
+    report = replaceAll(report, '{{periodend}}', parameters.endDate.toLocaleDateString('nl-NL'));
 
     const { startDate, endDate } = parameters;
     report = replaceAll(report, '{{type}}', parameters.type);
@@ -172,5 +154,4 @@ export default class ReportService {
       settings.stationery === Stationery.GEWIS ? this.stationeryDirGEWIS : this.stationeryDirBAC
     );
   }
-
 }

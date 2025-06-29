@@ -45,6 +45,106 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"WriteOff": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"amount": {
+						"type": "number",
+						"format": "double"
+					},
+					"reference": {
+						"type": "string"
+					},
+					"date": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"debtorNumber": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"amount",
+					"reference",
+					"date",
+					"debtorNumber"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"WriteOffParameters": {
+				"properties": {
+					"writeOff": {
+						"$ref": "#/components/schemas/WriteOff"
+					}
+				},
+				"required": [
+					"writeOff"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Language": {
+				"enum": [
+					"DUTCH",
+					"ENGLISH"
+				],
+				"type": "string"
+			},
+			"ReturnFileType": {
+				"enum": [
+					"PDF",
+					"TEX"
+				],
+				"type": "string"
+			},
+			"FileSettings": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"language": {
+						"$ref": "#/components/schemas/Language"
+					},
+					"fileType": {
+						"$ref": "#/components/schemas/ReturnFileType"
+					},
+					"stationery": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"name",
+					"language",
+					"fileType",
+					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"WriteOffRouteParams": {
+				"properties": {
+					"params": {
+						"$ref": "#/components/schemas/WriteOffParameters"
+					},
+					"settings": {
+						"$ref": "#/components/schemas/FileSettings"
+					}
+				},
+				"required": [
+					"params",
+					"settings"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"VAT": {
 				"enum": [
 					"ZERO",
@@ -163,48 +263,6 @@
 					"endDate",
 					"fines",
 					"total"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Language": {
-				"enum": [
-					"DUTCH",
-					"ENGLISH"
-				],
-				"type": "string"
-			},
-			"ReturnFileType": {
-				"enum": [
-					"PDF",
-					"TEX"
-				],
-				"type": "string"
-			},
-			"FileSettings": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"language": {
-						"$ref": "#/components/schemas/Language"
-					},
-					"fileType": {
-						"$ref": "#/components/schemas/ReturnFileType"
-					},
-					"stationery": {
-						"type": "string"
-					},
-					"createdAt": {
-						"type": "string",
-						"format": "date-time"
-					}
-				},
-				"required": [
-					"name",
-					"language",
-					"fileType",
-					"createdAt"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -745,6 +803,62 @@
 		}
 	},
 	"paths": {
+		"/write-off": {
+			"post": {
+				"operationId": "GenerateWriteOff",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Failed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ValidateErrorJSON"
+								},
+								"examples": {
+									"Example 1": {}
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalError"
+								},
+								"examples": {
+									"Example 1": {}
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"WriteOff"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/WriteOffRouteParams"
+							}
+						}
+					}
+				}
+			}
+		},
 		"/report/fines": {
 			"post": {
 				"operationId": "GenerateFineReport",
@@ -898,7 +1012,7 @@
 						}
 					}
 				},
-				"description": "Generates a payout as Tex of PDF file.\r\nSupply all payout parameters and receive the corresponding payout",
+				"description": "Generates a payout as Tex of PDF file.\nSupply all payout parameters and receive the corresponding payout",
 				"tags": [
 					"Payout"
 				],
@@ -1011,7 +1125,7 @@
 						}
 					}
 				},
-				"description": "Generates a contract as Tex of PDF file.\r\nSupply all contract parameters and contract type and receive the corresponding contract",
+				"description": "Generates a contract as Tex of PDF file.\nSupply all contract parameters and contract type and receive the corresponding contract",
 				"tags": [
 					"Contract"
 				],
@@ -1077,7 +1191,7 @@
 						}
 					}
 				},
-				"description": "Generates an invoice as Tex of PDF file.\r\nSupply all invoice parameters and invoice type and receive the corresponding invoice",
+				"description": "Generates an invoice as Tex of PDF file.\nSupply all invoice parameters and invoice type and receive the corresponding invoice",
 				"tags": [
 					"Invoice"
 				],

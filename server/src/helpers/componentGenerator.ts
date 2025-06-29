@@ -33,6 +33,14 @@ export interface Payout {
   debtorNumber: string;
 }
 
+export interface WriteOff {
+  name: string;
+  amount: number;
+  reference: string;
+  date: Date;
+  debtorNumber: string;
+}
+
 export enum VAT {
   ZERO = 'ZERO',
   LOW = 'LOW',
@@ -93,6 +101,13 @@ export function createProductList(file: string, products: Product[]): string {
   return file;
 }
 
+export function createWriteOffEntry(file: string, writeOff: WriteOff): string {
+  let writeOffEntry: string = '';
+  writeOffEntry += `${writeOff.name} & \\euro${convertNumberToCurrency(writeOff.amount)}\\\\`;
+  file = replaceAll(file, '{{writeoffentry}}', writeOffEntry);
+  return file;
+}
+
 export function createPayoutEntry(file: string, payout: Payout): string {
   let payoutEntry: string = '';
   payoutEntry += `\\euro${convertNumberToCurrency(payout.amount)} & ${payout.bankAccountName} & ${payout.bankAccountNumber}\\\\\n`;
@@ -100,7 +115,12 @@ export function createPayoutEntry(file: string, payout: Payout): string {
   return file;
 }
 
-export function createSellerPayoutEntry(file: string, amount: number, account: string, reference: string): string {
+export function createSellerPayoutEntry(
+  file: string,
+  amount: number,
+  account: string,
+  reference: string
+): string {
   let payoutEntry: string = '';
   payoutEntry += `\\euro${convertNumberToCurrency(amount)} & ${account} & ${reference}\\\\\n`;
   file = replaceAll(file, '{{payoutentry}}', payoutEntry);

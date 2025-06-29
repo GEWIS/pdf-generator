@@ -25,24 +25,21 @@ const app: Express = express();
 // Setup winston logger
 const logger = winston.createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.Console(),
-  ]
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+  transports: [new winston.transports.Console()]
 });
 
 // Middleware to log all requests
-app.use(expressWinston.logger({
-  winstonInstance: logger,
-  meta: true,
-  msg: 'HTTP {{req.method}} {{req.url}}',
-  expressFormat: true,
-  colorize: false,
-  requestWhitelist: ['body', 'query', 'params', 'headers'],
-}));
+app.use(
+  expressWinston.logger({
+    winstonInstance: logger,
+    meta: true,
+    msg: 'HTTP {{req.method}} {{req.url}}',
+    expressFormat: true,
+    colorize: false,
+    requestWhitelist: ['body', 'query', 'params', 'headers']
+  })
+);
 
 app.use(express.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
@@ -55,9 +52,11 @@ app.get('/pdf/swagger.json', (req, res) => {
 RegisterRoutes(app);
 
 // Error logging
-app.use(expressWinston.errorLogger({
-  winstonInstance: logger
-}));
+app.use(
+  expressWinston.errorLogger({
+    winstonInstance: logger
+  })
+);
 
 function setupErrorHandler(a: Express) {
   a.use(function notFoundHandler(_req, res: ExResponse) {

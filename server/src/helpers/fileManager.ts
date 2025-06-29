@@ -119,7 +119,7 @@ export default async function finishFileGeneration(
       );
     });
     // Latex compiler has a tendency to not finish writing the file before the promise resolves
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500));
   }
   return filePath;
 }
